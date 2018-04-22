@@ -93,3 +93,18 @@ else
 Lastly, the header file of the newly implemented adaptation algorithm needs to be included in the TcpStreamClient header file.
 
 The resulting logfiles will be written to mylogs/algorithmName/numberOfClients/
+
+## ATTENTION
+主要改动
+1. 加入userInfo（视点）信息，以支持多视点流媒体（Tiled-DASH）仿真。事实上也可以认为是加入了DASH标准中的AdaptationSet。对此请查看tcp-stream-interface.h。
+2. 仿真场景由室内WIFI网络改为LTE网络，主要包含EVA和ETU两个模型，可以自行调整。对此请查看dash.cc。
+
+详细修改如下：
+1. 修改目录结构，可以直接把主要工程号文件放入ns-3.27/目录下执行。
+2. 不再支持 --segmentSizeFile，保留了其他选项，增加了 userInfoFile。
+3. 算法部分拆分为 userInfo、bandwidthEstimate、bufferControl、adaptation 四个部分，分别对应用户视点预测/选择，带宽估计，缓存控制，码率选择。每个算法的抽象类都加入了两个额外的控制参数，暂时没有利用起来。userInfo和bufferControl暂时没有具体实现。bandwidthEstimate有AvgInChunk，AvgInlongTrem，AvgInTime，Harmonic，WeightedHarmonic和Crosslayer，Corsslayer尚未完成。adaptation中简化了tobasco，加入了sara及其修改版本，加入了简单设计的tomato（因为喜欢吃西红柿）及其修改版本。
+4. 加入了简单的gnuplot脚本。
+
+## TODO
+1. 实例化算法的userInfo和bufferContol模块。
+2. 重构和统一代码风格。

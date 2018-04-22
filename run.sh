@@ -1,0 +1,11 @@
+./waf --run "scratch/dash --adaptationAlgo=tomato --BandWidth=100"
+./waf --run "scratch/dash --adaptationAlgo=panda --BandWidth=100"
+./waf --run "scratch/dash --adaptationAlgo=festive --BandWidth=100"
+./waf --run "scratch/dash --adaptationAlgo=tobasco --BandWidth=100"
+./waf --run "scratch/dash --adaptationAlgo=tomato2 --BandWidth=100"
+
+./waf --run "scratch/dash --adaptationAlgo=tomato --BandWidth=75"
+./waf --run "scratch/dash --adaptationAlgo=panda --BandWidth=75"
+./waf --run "scratch/dash --adaptationAlgo=festive --BandWidth=75"
+./waf --run "scratch/dash --adaptationAlgo=tobasco --BandWidth=75"
+./waf --run "scratch/dash --adaptationAlgo=tomato2 --BandWidth=75"
