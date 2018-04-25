@@ -14,9 +14,11 @@
 #include <stdexcept>
 #include <stdint.h>
 
-namespace ns3 {
+namespace ns3
+{
 
-class UserinfoAlgorithm : public Object {
+class UserinfoAlgorithm : public Object
+{
 public:
   UserinfoAlgorithm(const videoData &videoData,
                     const playbackData &playbackData,

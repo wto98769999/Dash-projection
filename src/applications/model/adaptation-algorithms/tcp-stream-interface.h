@@ -18,7 +18,8 @@
 #ifndef TCP_STREAM_INTERFACE_H
 #define TCP_STREAM_INTERFACE_H
 
-namespace ns3 {
+namespace ns3
+{
 
 /*! \class algorithmReply tcp-stream-interface.h "model/tcp-stream-interface.h"
  *  \ingroup tcpStream
@@ -32,24 +33,26 @@ namespace ns3 {
  * when the algorithm made the decision and at which part of the code it decided
  * which representation index and inter-request time to select.
  */
-struct algorithmReply {
-  int64_t nextRepIndex; //!< representation level index of the next segement to
-                        //!< be downloaded by the client
-  int64_t nextDownloadDelay; //!< delay time in microseconds when the next
-                             //!< segment shall be requested from the server
-  int64_t decisionTime; //!< time in microsends when the adaptation algorithm
-                        //!< decided which segment to download next, only for
-                        //!< logging purposes
-  int64_t
-      decisionCase; //!< indicate in which part of the adaptation algorithm's
-                    //!< code the decision was made, which representation level
-                    //!< to request next, only for logging purposes
-  int64_t delayDecisionCase; //!< indicate in which part of the adaptation
-                             //!< algorithm's code the decision was made, how
-                             //!< much time in microsends to wait until the
-                             //!< segment shall be requested from server, only
-                             //!< for logging purposes
-  double estimateTh;
+struct algorithmReply
+{
+    int64_t nextRepIndex;      //!< representation level index of the next segement to
+                               //!< be downloaded by the client
+    int64_t nextDownloadDelay; //!< delay time in microseconds when the next
+                               //!< segment shall be requested from the server
+    int64_t decisionTime;      //!< time in microsends when the adaptation algorithm
+                               //!< decided which segment to download next, only for
+                               //!< logging purposes
+    int64_t
+        decisionCase;          //!< indicate in which part of the adaptation algorithm's
+                               //!< code the decision was made, which representation level
+                               //!< to request next, only for logging purposes
+    int64_t delayDecisionCase; //!< indicate in which part of the adaptation
+                               //!< algorithm's code the decision was made, how
+                               //!< much time in microsends to wait until the
+                               //!< segment shall be requested from server, only
+                               //!< for logging purposes
+    double estimateTh;
+    double QoE3D;
 };
 
 /*! \class bufferAlgoReply tcp-stream-interface.h "model/tcp-stream-interface.h"
@@ -59,41 +62,42 @@ struct algorithmReply {
  */
 struct bufferAlgoReply // new for buffer flush algo, added in 12-24
 {
-  int64_t bufferAlgoIndex;   //!< bufferClean = 1 bufferAdaptive = 2 default = 0
-  int64_t bufferCleanNumber; //!< number of buffered segment to be cleaned (in
-                             //!< Reverse order), only makes sense when
-                             //!< bufferclean is choosen ( bufferClean = 1)
-  int64_t bufferTargetNumber; //!< time in microsends for target buffer, default
-                              //!< value is set with each bufferAlgo (in private
-                              //!< data);
-  int64_t decisionTime; //!< time in microsends when the buffer algorithm works,
-                        //!< only for logging purposes
+    int64_t bufferAlgoIndex;    //!< bufferClean = 1 bufferAdaptive = 2 default = 0
+    int64_t bufferCleanNumber;  //!< number of buffered segment to be cleaned (in
+                                //!< Reverse order), only makes sense when
+                                //!< bufferclean is choosen ( bufferClean = 1)
+    int64_t bufferTargetNumber; //!< time in microsends for target buffer, default
+                                //!< value is set with each bufferAlgo (in private
+                                //!< data);
+    int64_t decisionTime;       //!< time in microsends when the buffer algorithm works,
+                                //!< only for logging purposes
 };
-struct crosslayerInfo {
-  int64_t decisionTime;
-  int64_t decisionCase;
-  int64_t estimateTh;
-  int64_t extraParameter;
+struct crosslayerInfo
+{
+    int64_t decisionTime;
+    int64_t decisionCase;
+    int64_t estimateTh;
+    int64_t extraParameter;
 };
 struct bandwidthAlgoReply // added in 12-27
 {
-  int64_t bandwidthAlgoIndex; //!< bandwidthAvg = 1 bandwidthCrosslayer = 2
-                              //!< default = 0
-  double bandwidthEstimate;   //!< bandwidth estimation value
-  int64_t decisionTime; //!< time in microsends when the bandwidth algorithm
-                        //!< works, only for logging purposes
-  int64_t
-      decisionCase; //!< for BandwidthCrosslayer, decision = 0
-                    //!< ->BandwidthDefault, decision = 1->BandwidthCrosslayer
-                    // !<for BandwithAvg,decison = 0->0(not enough data),
-                    // decison =1->BandwidthAvg
+    int64_t bandwidthAlgoIndex; //!< bandwidthAvg = 1 bandwidthCrosslayer = 2
+                                //!< default = 0
+    double bandwidthEstimate;   //!< bandwidth estimation value
+    int64_t decisionTime;       //!< time in microsends when the bandwidth algorithm
+                                //!< works, only for logging purposes
+    int64_t
+        decisionCase; //!< for BandwidthCrosslayer, decision = 0
+                      //!< ->BandwidthDefault, decision = 1->BandwidthCrosslayer
+                      // !<for BandwithAvg,decison = 0->0(not enough data),
+                      // decison =1->BandwidthAvg
 };
 struct userinfoAlgoReply // added in 12-28
 {
-  int64_t bufferCleanNumber;  //<!bufferAlgoParameter for bufferClean
-  int64_t bufferTargetNumber; //<!bufferAlgoParameter for bufferAdaptive
-  int64_t decisionTime; //!< time in microsends when the bandwidth algorithm
-                        //!< works, only for logging purposes
+    int64_t bufferCleanNumber;  //<!bufferAlgoParameter for bufferClean
+    int64_t bufferTargetNumber; //<!bufferAlgoParameter for bufferAdaptive
+    int64_t decisionTime;       //!< time in microsends when the bandwidth algorithm
+                                //!< works, only for logging purposes
 };
 /*! \class throughputData tcp-stream-interface.h "model/tcp-stream-interface.h"
  *  \ingroup tcpStream
@@ -103,18 +107,19 @@ struct userinfoAlgoReply // added in 12-28
  * client. These values are needed to compute the next representation index
  * based on previous throughput.
  */
-struct throughputData {
-  std::vector<int64_t>
-      transmissionRequested; //!< Simulation time in microseconds when a segment
-                             //!< was requested by the client
-  std::vector<int64_t>
-      transmissionStart; //!< Simulation time in microseconds when the first
-                         //!< packet of a segment was received
-  std::vector<int64_t>
-      transmissionEnd; //!< Simulation time in microseconds when the last packet
-                       //!< of a segment was received
-  std::vector<int64_t>
-      bytesReceived; //!< Number of bytes received, i.e. segment size
+struct throughputData
+{
+    std::vector<int64_t>
+        transmissionRequested; //!< Simulation time in microseconds when a segment
+                               //!< was requested by the client
+    std::vector<int64_t>
+        transmissionStart; //!< Simulation time in microseconds when the first
+                           //!< packet of a segment was received
+    std::vector<int64_t>
+        transmissionEnd; //!< Simulation time in microseconds when the last packet
+                         //!< of a segment was received
+    std::vector<int64_t>
+        bytesReceived; //!< Number of bytes received, i.e. segment size
 };
 
 /*! \class bufferData tcp-stream-interface.h "model/tcp-stream-interface.h"
@@ -124,42 +129,43 @@ struct throughputData {
  * coding, enhancement layer buffer may be required Tracks the status of the
  * buffer level.
  */
-struct bufferData {
-  std::vector<int64_t> timeNow; //!< current simulation time
-  std::vector<int64_t>
-      segmentIndex; //!< segmentIndex of segment in buffer(base layer) -1 = fail
-  std::vector<int64_t>
-      bufferLevelOld; //!< buffer level in microseconds before adding segment
-                      //!< duration (in microseconds) of just downloaded segment
-  std::vector<int64_t>
-      bufferLevelNew; //!< buffer level in microseconds after adding segment
-                      //!< duration (in microseconds) of just downloaded segment
+struct bufferData
+{
+    std::vector<int64_t> timeNow; //!< current simulation time
+    std::vector<int64_t>
+        segmentIndex; //!< segmentIndex of segment in buffer(base layer) -1 = fail
+    std::vector<int64_t>
+        bufferLevelOld; //!< buffer level in microseconds before adding segment
+                        //!< duration (in microseconds) of just downloaded segment
+    std::vector<int64_t>
+        bufferLevelNew; //!< buffer level in microseconds after adding segment
+                        //!< duration (in microseconds) of just downloaded segment
 };
 
 struct bufferEnhance1 // new for layer-based video coding, added in 12-24
 {
-  std::vector<int64_t> timeNowE1;    //!< current simulation time
-  std::vector<int64_t> segmentIndex; //!< segmentIndex of segment in
-                                     //!< buffer(Enhancement layer1) -1 = fail
-  std::vector<int64_t>
-      bufferLevelOldE1; //!< buffer level in microseconds before adding segment
-                        //!< duration (in microseconds) of just downloaded
-                        //!< segment
+    std::vector<int64_t> timeNowE1;    //!< current simulation time
+    std::vector<int64_t> segmentIndex; //!< segmentIndex of segment in
+                                       //!< buffer(Enhancement layer1) -1 = fail
+    std::vector<int64_t>
+        bufferLevelOldE1; //!< buffer level in microseconds before adding segment
+                          //!< duration (in microseconds) of just downloaded
+                          //!< segment
 };
 
 struct bufferEnhance2 // new for layer-based video coding, added in 12- 24
 {
-  std::vector<int64_t> timeNowE2;    //!< current simulation time
-  std::vector<int64_t> segmentIndex; //!< segmentIndex of segment in
-                                     //!< buffer(Enhancement layer2) -1 = fail
-  std::vector<int64_t>
-      bufferLevelOldE2; //!< buffer level in microseconds before adding segment
-                        //!< duration (in microseconds) of just downloaded
-                        //!< segment
-  std::vector<int64_t>
-      bufferLevelNewE2; //!< buffer level in microseconds after adding segment
-                        //!< duration (in microseconds) of just downloaded
-                        //!< segment
+    std::vector<int64_t> timeNowE2;    //!< current simulation time
+    std::vector<int64_t> segmentIndex; //!< segmentIndex of segment in
+                                       //!< buffer(Enhancement layer2) -1 = fail
+    std::vector<int64_t>
+        bufferLevelOldE2; //!< buffer level in microseconds before adding segment
+                          //!< duration (in microseconds) of just downloaded
+                          //!< segment
+    std::vector<int64_t>
+        bufferLevelNewE2; //!< buffer level in microseconds after adding segment
+                          //!< duration (in microseconds) of just downloaded
+                          //!< segment
 };
 
 /*! \class videoData tcp-stream-interface.h "model/tcp-stream-interface.h"
@@ -171,19 +177,20 @@ struct bufferEnhance2 // new for layer-based video coding, added in 12- 24
  * representation level i, the average bitrate of every representation level and
  * the duration of a segment in microseconds.
  */
-struct videoData {
-  std::vector<std::vector<std::vector<int64_t>>>
-      segmentSize; //!< vector holding representation levels in the first
-                   //!< dimension and their particular segment sizes in bytes in
-                   //!< the second dimension
-                   // 2-D vector, < viewPoint < RepsLevel <segmentsize>>
-  std::vector<std::vector<double>>
-      averageBitrate;      //!< holding the average bitrate of a segment in
-                           //!< representation i in bits
-                           // 2-D vector, < viewPoint < RepsLevel's Bitrate >
-  int64_t segmentDuration; //!< duration of a segment in microseconds
-  std::vector<int64_t> repIndex; // repIndex choosen
-  std::vector<int64_t> userInfo; // userViewPoint
+struct videoData
+{
+    std::vector<std::vector<std::vector<int64_t>>>
+        segmentSize; //!< vector holding representation levels in the first
+                     //!< dimension and their particular segment sizes in bytes in
+                     //!< the second dimension
+                     // 2-D vector, < viewPoint < RepsLevel <segmentsize>>
+    std::vector<std::vector<double>>
+        averageBitrate;            //!< holding the average bitrate of a segment in
+                                   //!< representation i in bits
+                                   // 2-D vector, < viewPoint < RepsLevel's Bitrate >
+    int64_t segmentDuration;       //!< duration of a segment in microseconds
+    std::vector<int64_t> repIndex; // repIndex choosen
+    std::vector<int64_t> userInfo; // userViewPoint
 };
 
 /*! \class playbackData tcp-stream-interface.h "model/tcp-stream-interface.h"
@@ -196,10 +203,11 @@ struct videoData {
  * found. playbackStart however, indicates the start of the playback (in the
  * streaming process) of the segment in microseconds in simulation time.
  */
-struct playbackData {
-  std::vector<int64_t> playbackIndex; //!< Index of the video segment
-  std::vector<int64_t> playbackStart; //!< Point in time in microseconds when
-                                      //!< playback of this segment started
+struct playbackData
+{
+    std::vector<int64_t> playbackIndex; //!< Index of the video segment
+    std::vector<int64_t> playbackStart; //!< Point in time in microseconds when
+                                        //!< playback of this segment started
 };
 
 } // namespace ns3

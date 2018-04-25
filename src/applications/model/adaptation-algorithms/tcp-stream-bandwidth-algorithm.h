@@ -14,9 +14,11 @@
 #include <stdexcept>
 #include <stdint.h>
 
-namespace ns3 {
+namespace ns3
+{
 
-class BandwidthAlgorithm : public Object {
+class BandwidthAlgorithm : public Object
+{
 public:
   BandwidthAlgorithm(const videoData &videoData,
                      const playbackData &playbackData,

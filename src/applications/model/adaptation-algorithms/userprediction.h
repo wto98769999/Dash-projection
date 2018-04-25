@@ -2,9 +2,11 @@
 #define USERPREDICTION_ALGORITHM_H
 #include "tcp-stream-userinfo-algorithm.h"
 
-namespace ns3 {
+namespace ns3
+{
 
-class UserPredictionAlgorithm : public UserinfoAlgorithm {
+class UserPredictionAlgorithm : public UserinfoAlgorithm
+{
 public:
   UserPredictionAlgorithm(const videoData &videoData,
                           const playbackData &playbackData,

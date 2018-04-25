@@ -26,7 +26,8 @@
 #include "ns3/traced-callback.h"
 #include <map>
 
-namespace ns3 {
+namespace ns3
+{
 
 class Socket;
 class Packet;
@@ -42,14 +43,15 @@ class PropagationDelayModel;
  * \brief data strucute the server uses to manage the following data for every
  * client separately.
  */
-struct callbackData {
-  uint32_t currentTxBytes; //!< already sent bytes for this particular segment,
-                           //!< set to 0 if sent bytes == packetSizeToReturn, so
-                           //!< transmission for this segment is over
+struct callbackData
+{
+  uint32_t currentTxBytes;     //!< already sent bytes for this particular segment,
+                               //!< set to 0 if sent bytes == packetSizeToReturn, so
+                               //!< transmission for this segment is over
   uint32_t packetSizeToReturn; //!< total amount of bytes that have to be
                                //!< returned to the client
-  bool send; //!< true as long as there are still bytes left to be sent for the
-             //!< current segment
+  bool send;                   //!< true as long as there are still bytes left to be sent for the
+                               //!< current segment
 };
 
 /**
@@ -59,7 +61,8 @@ struct callbackData {
  * Clients sent messages with the amount of bytes they want the server to return
  * to them.
  */
-class TcpStreamServer : public Application {
+class TcpStreamServer : public Application
+{
 public:
   /**
    * \brief Get the type ID.
@@ -136,9 +139,9 @@ private:
   Ptr<Socket> m_socket;  //!< IPv4 Socket
   Ptr<Socket> m_socket6; //!< IPv6 Socket
   std::map<Address, callbackData>
-      m_callbackData; //!< With this it is possible to access the
-                      //!< currentTxBytes, the packetSizeToReturn and the send
-                      //!< boolean through the from value of the client.
+      m_callbackData;                      //!< With this it is possible to access the
+                                           //!< currentTxBytes, the packetSizeToReturn and the send
+                                           //!< boolean through the from value of the client.
   std::vector<Address> m_connectedClients; //!< Vector which holds the list of
                                            //!< currently connected clients.
 };

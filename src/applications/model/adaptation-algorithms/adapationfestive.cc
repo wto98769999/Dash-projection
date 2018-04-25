@@ -18,7 +18,8 @@
 
 #include "adapationfestive.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 NS_LOG_COMPONENT_DEFINE("FestiveAlgorithm");
 NS_OBJECT_ENSURE_REGISTERED(FestiveAlgorithm);
@@ -31,7 +32,8 @@ FestiveAlgorithm::FestiveAlgorithm(const videoData &videoData,
       m_targetBuffer(m_videoData.segmentDuration * 5),
       m_delta(m_videoData.segmentDuration * 1), m_alpha(12.0),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1),
-      m_thrptThrsh(0.95) {
+      m_thrptThrsh(0.95)
+{
   NS_LOG_INFO(this);
   m_smooth.push_back(3); // after how many steps switch up is possible
   m_smooth.push_back(1); // switch up by how many representatations at once
@@ -42,7 +44,8 @@ FestiveAlgorithm::FestiveAlgorithm(const videoData &videoData,
 algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
                                             const int64_t clientId,
                                             int64_t extraParameter,
-                                            int64_t extraParameter2) {
+                                            int64_t extraParameter2)
+{
   int64_t timeNow = Simulator::Now().GetMicroSeconds();
   bool decisionMade = false;
   algorithmReply answer;
@@ -50,7 +53,8 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
   answer.nextDownloadDelay = 0;
   answer.delayDecisionCase = 0;
 
-  if (segmentCounter == 0) {
+  if (segmentCounter == 0)
+  {
     answer.nextRepIndex = 0;
     answer.decisionCase = 0;
     answer.estimateTh = extraParameter;
@@ -59,7 +63,8 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
   int64_t bufferNow = m_bufferData.bufferLevelNew.back() -
                       (timeNow - m_throughput.transmissionEnd.back());
 
-  if (segmentCounter <= 3) {
+  if (segmentCounter <= 3)
+  {
     answer.nextRepIndex = 0;
     answer.decisionCase = 1;
     return answer;
@@ -72,7 +77,8 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
   int64_t upperBound = m_targetBuffer + m_delta;
   int64_t randBuf =
       (int64_t)lowerBound + (std::rand() % (upperBound - (lowerBound) + 1));
-  if (bufferNow > randBuf) {
+  if (bufferNow > randBuf)
+  {
     answer.nextDownloadDelay = bufferNow - randBuf;
     answer.delayDecisionCase = 1;
   }
@@ -82,7 +88,8 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
 
   if (currentRepIndex > 0 &&
       m_videoData.averageBitrate.at(m_videoData.userInfo.at(segmentCounter))
-              .at(currentRepIndex) > thrptEstimation * m_thrptThrsh) {
+              .at(currentRepIndex) > thrptEstimation * m_thrptThrsh)
+  {
     refIndex = currentRepIndex - 1;
     answer.decisionCase = 1;
     decisionMade = true;
@@ -90,29 +97,37 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
 
   assert(m_smooth.at(0) > 0);
   assert(m_smooth.at(1) == 1);
-  if (currentRepIndex < m_highestRepIndex && !decisionMade) {
+  if (currentRepIndex < m_highestRepIndex && !decisionMade)
+  {
     int count = 0;
-    for (unsigned _sd = m_playbackData.playbackIndex.size() - 1; _sd-- > 0;) {
-      if (currentRepIndex == m_playbackData.playbackIndex.at(_sd)) {
+    for (unsigned _sd = m_playbackData.playbackIndex.size() - 1; _sd-- > 0;)
+    {
+      if (currentRepIndex == m_playbackData.playbackIndex.at(_sd))
+      {
         count++;
-        if (count >= m_smooth.at(0)) {
+        if (count >= m_smooth.at(0))
+        {
           break;
         }
-      } else {
+      }
+      else
+      {
         break;
       }
     }
     if (count >= m_smooth.at(0) &&
         (double)m_videoData.averageBitrate
                 .at(m_videoData.userInfo.at(segmentCounter))
-                .at(currentRepIndex + 1) <= thrptEstimation) {
+                .at(currentRepIndex + 1) <= thrptEstimation)
+    {
       refIndex = currentRepIndex + 1;
       answer.decisionCase = 1;
       decisionMade = true;
     }
   }
 
-  if (!decisionMade) {
+  if (!decisionMade)
+  {
     answer.nextRepIndex = currentRepIndex;
     answer.decisionCase = 3;
     return answer;
@@ -120,12 +135,17 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
 
   int64_t numberOfSwitches = 0;
   std::vector<int64_t> foundIndices;
-  for (unsigned _sd = m_playbackData.playbackStart.size() - 1; _sd-- > 0;) {
-    if (m_playbackData.playbackStart.at(_sd) < timeNow) {
+  for (unsigned _sd = m_playbackData.playbackStart.size() - 1; _sd-- > 0;)
+  {
+    if (m_playbackData.playbackStart.at(_sd) < timeNow)
+    {
       break;
-    } else if (currentRepIndex != m_playbackData.playbackIndex.at(_sd)) {
+    }
+    else if (currentRepIndex != m_playbackData.playbackIndex.at(_sd))
+    {
       if (std::find(foundIndices.begin(), foundIndices.end(),
-                    currentRepIndex) != foundIndices.end()) {
+                    currentRepIndex) != foundIndices.end())
+      {
         continue;
       }
       numberOfSwitches++;
@@ -156,11 +176,14 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
   double scoreStabilityRef = pow(2.0, ((double)numberOfSwitches)) + 1.0;
 
   if ((scoreStabilityCurrent + m_alpha * scoreEfficiencyCurrent) <
-      scoreStabilityRef + m_alpha * scoreEfficiencyRef) {
+      scoreStabilityRef + m_alpha * scoreEfficiencyRef)
+  {
     answer.nextRepIndex = currentRepIndex;
     answer.decisionCase = 4;
     return answer;
-  } else {
+  }
+  else
+  {
     answer.nextRepIndex = refIndex;
     return answer;
   }

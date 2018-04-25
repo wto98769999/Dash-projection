@@ -3,9 +3,11 @@
 
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3 {
+namespace ns3
+{
 
-class constbitrateAlgorithm : public AdaptationAlgorithm {
+class constbitrateAlgorithm : public AdaptationAlgorithm
+{
 public:
   constbitrateAlgorithm(const videoData &videoData,
                         const playbackData &playbackData,

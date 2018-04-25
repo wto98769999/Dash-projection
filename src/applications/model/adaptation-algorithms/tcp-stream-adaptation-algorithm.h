@@ -32,28 +32,17 @@
 #include <stdexcept>
 #include <stdint.h>
 
-namespace ns3 {
-/**
- * \ingroup tcpStream
- * \brief A base class for adaptation algorithms
- *
- */
-class AdaptationAlgorithm : public Object {
+namespace ns3
+{
+
+class AdaptationAlgorithm : public Object
+{
 public:
   AdaptationAlgorithm(const videoData &videoData,
                       const playbackData &playbackData,
                       const bufferData &bufferData,
                       const throughputData &throughput);
 
-  /**
-   * \ingroup tcpStream
-   * \brief Compute the next representation index
-   *
-   * Every Adaptation algorithm must overwrite the method.
-   *
-   * \return struct containig the index of next representation to be downloaded
-   * and the inter-request delay.
-   */
   virtual algorithmReply GetNextRep(const int64_t segmentCounter,
                                     const int64_t clientId,
                                     int64_t extraParameter,

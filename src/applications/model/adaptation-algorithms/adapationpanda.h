@@ -21,13 +21,11 @@
 
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3 {
+namespace ns3
+{
 
-/**
- * \ingroup tcpStream
- * \brief Implementation of the Panda adaptation algorithm
- */
-class PandaAlgorithm : public AdaptationAlgorithm {
+class PandaAlgorithm : public AdaptationAlgorithm
+{
 public:
   PandaAlgorithm(const videoData &videoData, const playbackData &playbackData,
                  const bufferData &bufferData,

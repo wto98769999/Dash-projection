@@ -1,6 +1,7 @@
 #include "tcp-stream-bandwidth-algorithm.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 NS_LOG_COMPONENT_DEFINE("BandwidthAlgorithm");
 NS_OBJECT_ENSURE_REGISTERED(BandwidthAlgorithm);

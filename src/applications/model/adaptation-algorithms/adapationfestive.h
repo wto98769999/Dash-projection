@@ -21,13 +21,15 @@
 
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 /**
  * \ingroup tcpStream
  * \brief Implementation of the Festive adaptation algorithm
  */
-class FestiveAlgorithm : public AdaptationAlgorithm {
+class FestiveAlgorithm : public AdaptationAlgorithm
+{
 public:
   FestiveAlgorithm(const videoData &videoData, const playbackData &playbackData,
                    const bufferData &bufferData,

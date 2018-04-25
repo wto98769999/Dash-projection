@@ -14,9 +14,11 @@
 #include <stdexcept>
 #include <stdint.h>
 
-namespace ns3 {
+namespace ns3
+{
 
-class BufferAlgorithm : public Object {
+class BufferAlgorithm : public Object
+{
 public:
   BufferAlgorithm(const videoData &videoData, const playbackData &playbackData,
                   const bufferData &bufferData,

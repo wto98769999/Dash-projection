@@ -3,9 +3,11 @@
 
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3 {
+namespace ns3
+{
 
-class Sara2Algorithm : public AdaptationAlgorithm {
+class Sara2Algorithm : public AdaptationAlgorithm
+{
 public:
   Sara2Algorithm(const videoData &videoData, const playbackData &playbackData,
                  const bufferData &bufferData,

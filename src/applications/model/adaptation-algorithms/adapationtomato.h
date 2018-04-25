@@ -3,9 +3,11 @@
 
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3 {
+namespace ns3
+{
 
-class TomatoAlgorithm : public AdaptationAlgorithm {
+class TomatoAlgorithm : public AdaptationAlgorithm
+{
 public:
   TomatoAlgorithm(const videoData &videoData, const playbackData &playbackData,
                   const bufferData &bufferData,

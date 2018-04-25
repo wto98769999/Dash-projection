@@ -1,6 +1,7 @@
 #include "tcp-stream-userinfo-algorithm.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 NS_LOG_COMPONENT_DEFINE("UserinfoAlgorithm");
 NS_OBJECT_ENSURE_REGISTERED(UserinfoAlgorithm);

@@ -45,7 +45,9 @@
 #include <sys/types.h>
 #include <vector>
 
-template <typename T> std::string ToString(T val) {
+template <typename T>
+std::string ToString(T val)
+{
   std::stringstream stream;
   stream << val;
   return stream.str();
@@ -54,7 +56,8 @@ template <typename T> std::string ToString(T val) {
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("TcpStreamExample");
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   LogComponentEnable("TcpStreamExample", LOG_LEVEL_INFO);
   LogComponentEnable("TcpStreamClientApplication", LOG_LEVEL_INFO);
   LogComponentEnable("TcpStreamServerApplication", LOG_LEVEL_INFO);
@@ -217,13 +220,16 @@ int main(int argc, char *argv[]) {
   clientPosLog.open(clientPos.c_str());
   NS_ASSERT_MSG(clientPosLog.is_open(), "Couldn't open clientPosLog file");
 
-  switch (simulationId) {
-  case 0: {
+  switch (simulationId)
+  {
+  case 0:
+  {
     Ptr<ListPositionAllocator> positionAlloc =
         CreateObject<ListPositionAllocator>();
     Ptr<RandomDiscPositionAllocator> randPosAlloc =
         CreateObject<RandomDiscPositionAllocator>();
-    for (uint i = 0; i < numberOfClients; i++) {
+    for (uint i = 0; i < numberOfClients; i++)
+    {
       randPosAlloc->SetX(0);
       randPosAlloc->SetY(0);
       Vector pos = Vector(randPosAlloc->GetNext());
@@ -239,7 +245,8 @@ int main(int argc, char *argv[]) {
     ueMobility_1.Install(ue_nodes);
     break;
   }
-  case 1: {
+  case 1:
+  {
     MobilityHelper ueMobility_2;
     ueMobility_2.SetMobilityModel(
         "ns3::RandomWalk2dMobilityModel", "Mode", StringValue("Time"), "Time",
@@ -249,35 +256,40 @@ int main(int argc, char *argv[]) {
     ueMobility_2.Install(ue_nodes.Get(0));
     break;
   }
-  case 2: {
+  case 2:
+  {
     MobilityHelper ueMobility_3;
     ueMobility_3.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
     ueMobility_3.SetPositionAllocator(
         "ns3::UniformDiscPositionAllocator", "X", DoubleValue(90.0), "Y",
         DoubleValue(-15.0), "rho", DoubleValue(0));
     ueMobility_3.Install(ue_nodes);
-    for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
+    for (int64_t i = 0; i < ue_nodes.GetN(); i++)
+    {
       Ptr<ConstantVelocityMobilityModel> cvmm =
           ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
       cvmm->SetVelocity(Vector(0, 0.833, 0.0));
     }
     break;
   }
-  case 3: {
+  case 3:
+  {
     MobilityHelper ueMobility_4;
     ueMobility_4.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
     ueMobility_4.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X",
                                       DoubleValue(-90.0), "Y",
                                       DoubleValue(-0.0), "rho", DoubleValue(0));
     ueMobility_4.Install(ue_nodes);
-    for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
+    for (int64_t i = 0; i < ue_nodes.GetN(); i++)
+    {
       Ptr<ConstantVelocityMobilityModel> cvmm =
           ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
       cvmm->SetVelocity(Vector(0.83333, 0.0, 0.0));
     }
     break;
   }
-  case 4: {
+  case 4:
+  {
     MobilityHelper ueMobility_5;
     ueMobility_5.SetMobilityModel("ns3::ConstantAccelerationMobilityModel");
     ueMobility_5.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X",
@@ -296,19 +308,25 @@ int main(int argc, char *argv[]) {
 
   internet.Install(ue_nodes);
   ueIpIface = epcHelper->AssignUeIpv4Address(NetDeviceContainer(ue_devs));
-  if (simulationId == 3 || simulationId == 4) {
+  if (simulationId == 3 || simulationId == 4)
+  {
     lteHelper->Attach(ue_devs.Get(0), eNb_devs.Get(0));
     lteHelper->AddX2Interface(eNb_nodes);
     lteHelper->HandoverRequest(Seconds(96), ue_devs.Get(0), eNb_devs.Get(0),
                                eNb_devs.Get(1));
-  } else if (simulationId == 5) {
+  }
+  else if (simulationId == 5)
+  {
     lteHelper->Attach(ue_devs.Get(0), eNb_devs.Get(0));
     lteHelper->AddX2Interface(eNb_nodes);
     lteHelper->AttachToClosestEnb(ue_devs, eNb_devs);
-  } else {
+  }
+  else
+  {
     lteHelper->AttachToClosestEnb(ue_devs, eNb_devs);
   }
-  for (uint32_t i = 0; i < ue_nodes.GetN(); i++) {
+  for (uint32_t i = 0; i < ue_nodes.GetN(); i++)
+  {
     Ptr<Node> uenode = ue_nodes.Get(i);
     Ptr<Ipv4StaticRouting> ue_static_routing =
         ipv4RoutingHelper.GetStaticRouting(uenode->GetObject<Ipv4>());
@@ -318,11 +336,13 @@ int main(int argc, char *argv[]) {
   lteHelper->EnableTraces();
 
   std::vector<std::pair<Ptr<Node>, std::string>> clients;
-  for (NodeContainer::Iterator i = ue_nodes.Begin(); i != ue_nodes.End(); ++i) {
+  for (NodeContainer::Iterator i = ue_nodes.Begin(); i != ue_nodes.End(); ++i)
+  {
     std::pair<Ptr<Node>, std::string> client(*i, adaptationAlgo);
     clients.push_back(client);
   }
-  if (app_type.compare("Dash") == 0) {
+  if (app_type.compare("Dash") == 0)
+  {
     uint16_t port = 80;
     TcpStreamServerHelper serverHelper(port);
     ApplicationContainer serverApp =
@@ -342,7 +362,7 @@ int main(int argc, char *argv[]) {
     NS_LOG_INFO("Run Simulation.");
     NS_LOG_INFO("Sim:   " << simulationId
                           << "   Clients:   " << numberOfClients);
-    Simulator::Stop(Seconds(125));
+    Simulator::Stop(Seconds(124));
     Simulator::Run();
     Simulator::Destroy();
     NS_LOG_INFO("Done.");

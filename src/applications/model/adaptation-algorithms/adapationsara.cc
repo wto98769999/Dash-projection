@@ -1,6 +1,7 @@
 #include "adapationsara.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 NS_LOG_COMPONENT_DEFINE("SaraAlgorithm");
 NS_OBJECT_ENSURE_REGISTERED(SaraAlgorithm);
@@ -13,7 +14,8 @@ SaraAlgorithm::SaraAlgorithm(const videoData &videoData,
       m_lastRepIndex(0), m_bufferHigh(m_videoData.segmentDuration * 6),
       m_bufferLow(m_videoData.segmentDuration * 4),
       m_bufferMin(m_videoData.segmentDuration * 2),
-      m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
+      m_highestRepIndex(videoData.averageBitrate[0].size() - 1)
+{
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,
                 "The highest quality representation index should be >= 0");
@@ -22,7 +24,8 @@ SaraAlgorithm::SaraAlgorithm(const videoData &videoData,
 algorithmReply SaraAlgorithm::GetNextRep(const int64_t segmentCounter,
                                          const int64_t clientId,
                                          int64_t extraParameter,
-                                         int64_t extraParameter2) {
+                                         int64_t extraParameter2)
+{
   algorithmReply answer;
   answer.decisionCase = 0;
   answer.delayDecisionCase = 0;
@@ -30,21 +33,27 @@ algorithmReply SaraAlgorithm::GetNextRep(const int64_t segmentCounter,
   const int64_t timeNow = Simulator::Now().GetMicroSeconds();
   answer.decisionTime = timeNow;
   int64_t bufferNow = 0;
-  if (segmentCounter != 0) {
+  if (segmentCounter != 0)
+  {
     bufferNow = m_bufferData.bufferLevelNew.back() -
                 (timeNow - m_throughput.transmissionEnd.back());
-    if (bufferNow <= m_bufferMin) {
+    if (bufferNow <= m_bufferMin)
+    {
       answer.nextRepIndex = 0;
       answer.decisionCase = 1;
-    } else {
+    }
+    else
+    {
       if ((double)(8.0 * m_videoData.segmentSize
                              .at(m_videoData.userInfo.at(segmentCounter))
                              .at(m_lastRepIndex)
                              .at(segmentCounter)) /
               extraParameter >
-          (bufferNow - m_bufferMin) / 1000000.0) {
+          (bufferNow - m_bufferMin) / 1000000.0)
+      {
         int nextRepIndex;
-        for (nextRepIndex = 0; nextRepIndex < m_lastRepIndex; nextRepIndex++) {
+        for (nextRepIndex = 0; nextRepIndex < m_lastRepIndex; nextRepIndex++)
+        {
           if ((double)(8.0 * m_videoData.segmentSize
                                  .at(m_videoData.userInfo.at(segmentCounter))
                                  .at(nextRepIndex)
@@ -55,24 +64,32 @@ algorithmReply SaraAlgorithm::GetNextRep(const int64_t segmentCounter,
         }
         answer.nextRepIndex = nextRepIndex > 0 ? nextRepIndex - 1 : 0;
         answer.decisionCase = 3;
-      } else if (bufferNow <= m_bufferLow) {
+      }
+      else if (bufferNow <= m_bufferLow)
+      {
         if (m_lastRepIndex < m_highestRepIndex &&
             (double)(8.0 * m_videoData.segmentSize
                                .at(m_videoData.userInfo.at(segmentCounter))
                                .at(m_lastRepIndex + 1)
                                .at(segmentCounter)) /
                     extraParameter <=
-                (bufferNow - m_bufferMin) / 1000000.0) {
+                (bufferNow - m_bufferMin) / 1000000.0)
+        {
           answer.nextRepIndex = m_lastRepIndex + 1;
           answer.decisionCase = 4;
-        } else {
+        }
+        else
+        {
           answer.nextRepIndex = m_lastRepIndex;
           answer.decisionCase = 5;
         }
-      } else if (bufferNow <= m_bufferHigh) {
+      }
+      else if (bufferNow <= m_bufferHigh)
+      {
         int nextRepIndex;
         for (nextRepIndex = m_highestRepIndex; nextRepIndex >= m_lastRepIndex;
-             nextRepIndex--) {
+             nextRepIndex--)
+        {
           if ((double)(8.0 * m_videoData.segmentSize
                                  .at(m_videoData.userInfo.at(segmentCounter))
                                  .at(nextRepIndex)
@@ -83,10 +100,13 @@ algorithmReply SaraAlgorithm::GetNextRep(const int64_t segmentCounter,
         }
         answer.nextRepIndex = nextRepIndex;
         answer.decisionCase = 6;
-      } else if (bufferNow > m_bufferHigh) {
+      }
+      else if (bufferNow > m_bufferHigh)
+      {
         int nextRepIndex;
         for (nextRepIndex = m_highestRepIndex; nextRepIndex >= m_lastRepIndex;
-             nextRepIndex--) {
+             nextRepIndex--)
+        {
           if ((double)(8.0 * m_videoData.segmentSize
                                  .at(m_videoData.userInfo.at(segmentCounter))
                                  .at(nextRepIndex)
@@ -97,17 +117,22 @@ algorithmReply SaraAlgorithm::GetNextRep(const int64_t segmentCounter,
         }
         answer.nextRepIndex = nextRepIndex;
         answer.decisionCase = 6;
-      } else {
+      }
+      else
+      {
         answer.nextRepIndex = m_lastRepIndex;
         answer.decisionCase = 2;
       }
     }
 
-    if (bufferNow > m_bufferHigh) {
+    if (bufferNow > m_bufferHigh)
+    {
       answer.nextDownloadDelay = (int64_t)(bufferNow - m_bufferHigh);
       answer.delayDecisionCase = 1;
     }
-  } else {
+  }
+  else
+  {
     answer.nextRepIndex = m_lastRepIndex;
     answer.decisionCase = 0;
   }

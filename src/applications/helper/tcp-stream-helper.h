@@ -20,13 +20,13 @@
 #ifndef TCP_STREAM_HELPER_H
 #define TCP_STREAM_HELPER_H
 
+#include <stdint.h>
 #include "ns3/application-container.h"
-#include "ns3/ipv4-address.h"
-#include "ns3/ipv6-address.h"
 #include "ns3/node-container.h"
 #include "ns3/object-factory.h"
+#include "ns3/ipv4-address.h"
+#include "ns3/ipv6-address.h"
 #include "ns3/phy-rx-stats-calculator.h"
-#include <stdint.h>
 
 namespace ns3 {
 
@@ -35,7 +35,8 @@ namespace ns3 {
  * \brief Create a server application which waits for input UDP packets
  *        and sends them back to the original sender.
  */
-class TcpStreamServerHelper {
+class TcpStreamServerHelper
+{
 public:
   /**
    * Create TcpStreamServerHelper which will make life easier for people trying
@@ -43,7 +44,7 @@ public:
    *
    * \param port The port the server will wait on for incoming packets
    */
-  TcpStreamServerHelper(uint16_t port);
+  TcpStreamServerHelper (uint16_t port);
 
   /**
    * Record an attribute to be set in each Application after it is is created.
@@ -51,7 +52,7 @@ public:
    * \param name the name of the attribute to set
    * \param value the value of the attribute to set
    */
-  void SetAttribute(std::string name, const AttributeValue &value);
+  void SetAttribute (std::string name, const AttributeValue &value);
 
   /**
    * Create a TcpStreamServerApplication on the specified Node.
@@ -61,7 +62,7 @@ public:
    *
    * \returns An ApplicationContainer holding the Application created,
    */
-  ApplicationContainer Install(Ptr<Node> node) const;
+  ApplicationContainer Install (Ptr<Node> node) const;
 
   /**
    * Create a TcpStreamServerApplication on specified node
@@ -72,7 +73,7 @@ public:
    *
    * \returns An ApplicationContainer holding the Application created.
    */
-  ApplicationContainer Install(std::string nodeName) const;
+  ApplicationContainer Install (std::string nodeName) const;
 
   /**
    * \param c The nodes on which to create the Applications.  The nodes
@@ -81,10 +82,10 @@ public:
    * Create one tcp stream server application on each of the Nodes in the
    * NodeContainer.
    *
-   * \returns The applications created, one Application per Node in the
+   * \returns The applications created, one Application per Node in the 
    *          NodeContainer.
    */
-  ApplicationContainer Install(NodeContainer c) const;
+  ApplicationContainer Install (NodeContainer c) const;
 
 private:
   /**
@@ -94,16 +95,17 @@ private:
    * \param node The node on which an TcpStreamServer will be installed.
    * \returns Ptr to the application installed.
    */
-  Ptr<Application> InstallPriv(Ptr<Node> node) const;
+  Ptr<Application> InstallPriv (Ptr<Node> node) const;
+
   ObjectFactory m_factory; //!< Object factory.
 };
 
 /**
  * \ingroup TcpStream
- * \brief Create an application which sends a UDP packet and waits for an echo
- * of this packet
+ * \brief Create an application which sends a UDP packet and waits for an echo of this packet
  */
-class TcpStreamClientHelper {
+class TcpStreamClientHelper
+{
 public:
   /**
    * Create TcpStreamClientHelper which will make life easier for people trying
@@ -112,17 +114,16 @@ public:
    * \param ip The IP address of the remote tcp stream server
    * \param port The port number of the remote tcp stream server
    */
-  TcpStreamClientHelper(Address ip, uint16_t port);
-  /**
+  TcpStreamClientHelper (Address ip, uint16_t port);
+    /**
    * Create TcpStreamClientHelper which will make life easier for people trying
    * to set up simulations with echos.
    *
    * \param ip The IP address of the remote tcp stream server
    * \param port The port number of the remote tcp stream server
-   * \param crosssInfo: The type should be Ptr<PhyRxStatsCalculator>
+   * \param crosssInfo: The type should be Ptr<PhyRxStatsCalculator> 
    */
-  TcpStreamClientHelper(Address ip, uint16_t port,
-                        const Ptr<PhyRxStatsCalculator> crossLayerInfo);
+  TcpStreamClientHelper (Address ip, uint16_t port, const Ptr<PhyRxStatsCalculator> crossLayerInfo);
   /**
    * Create TcpStreamClientHelper which will make life easier for people trying
    * to set up simulations with echos.
@@ -130,7 +131,7 @@ public:
    * \param ip The IPv4 address of the remote tcp stream server
    * \param port The port number of the remote tcp stream server
    */
-  TcpStreamClientHelper(Ipv4Address ip, uint16_t port);
+  TcpStreamClientHelper (Ipv4Address ip, uint16_t port);
   /**
    * Create TcpStreamClientHelper which will make life easier for people trying
    * to set up simulations with echos.
@@ -138,7 +139,7 @@ public:
    * \param ip The IPv6 address of the remote tcp stream server
    * \param port The port number of the remote tcp stream server
    */
-  TcpStreamClientHelper(Ipv6Address ip, uint16_t port);
+  TcpStreamClientHelper (Ipv6Address ip, uint16_t port);
 
   /**
    * Record an attribute to be set in each Application after it is is created.
@@ -146,36 +147,33 @@ public:
    * \param name the name of the attribute to set
    * \param value the value of the attribute to set
    */
-  void SetAttribute(std::string name, const AttributeValue &value);
+  void SetAttribute (std::string name, const AttributeValue &value);
 
   /**
-   * \param clients the nodes with the name of the adaptation algorithm to be
-   * used
+   * \param clients the nodes with the name of the adaptation algorithm to be used
    *
    * Create one tcp stream client application on each of the input nodes and
-   * instantiate an adaptation algorithm on each of the tcp stream client
-   * according to the given string.
+   * instantiate an adaptation algorithm on each of the tcp stream client according
+   * to the given string.
    *
    * \returns the applications created, one application per input node.
    */
-  ApplicationContainer
-  Install(std::vector<std::pair<Ptr<Node>, std::string>> clients) const;
-
+  ApplicationContainer Install (std::vector <std::pair <Ptr<Node>, std::string> > clients) const;
+  
 private:
   /**
    * Install an ns3::TcpStreamClient on the node configured with all the
    * attributes set with SetAttribute.
    *
    * \param node The node on which an TcpStreamClient will be installed.
-   * \param algo A string containing the name of the adaptation algorithm to be
-   * used on this client \param clientId distinguish this client object from
-   * other parallel running clients, for logging purposes \param simulationId
-   * distinguish this simulation from other subsequently started simulations,
-   * for logging purposes \returns Ptr to the application installed.
+   * \param algo A string containing the name of the adaptation algorithm to be used on this client
+   * \param clientId distinguish this client object from other parallel running clients, for logging purposes
+   * \param simulationId distinguish this simulation from other subsequently started simulations, for logging purposes
+   * \returns Ptr to the application installed.
    */
-  Ptr<Application> InstallPriv(Ptr<Node> node, std::string algo,
-                               uint16_t clientId) const;
+  Ptr<Application> InstallPriv (Ptr<Node> node, std::string algo, uint16_t clientId) const;
   ObjectFactory m_factory; //!< Object factory.
+  Ptr<PhyRxStatsCalculator> m_crossLayerInfo;
 };
 
 } // namespace ns3

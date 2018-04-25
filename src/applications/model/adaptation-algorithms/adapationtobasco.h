@@ -20,13 +20,15 @@
 #define TOBASCO_ALGORITHM_H
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 /**
  * \ingroup tcpStream
  * \brief Implementation of the Tobasco adaptation algorithm
  */
-class TobascoAlgorithm : public AdaptationAlgorithm {
+class TobascoAlgorithm : public AdaptationAlgorithm
+{
 public:
   TobascoAlgorithm(const videoData &videoData, const playbackData &playbackData,
                    const bufferData &bufferData,
