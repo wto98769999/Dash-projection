@@ -268,7 +268,7 @@ void TcpStreamClient::Initialise(std::string algorithm, uint16_t clientId, const
     algo = new TobascoAlgorithm(m_videoData, m_playbackData, m_bufferData,
                                 m_throughput);
   }
-  else if (algorithm == "tomato")
+  else if (algorithm == "tomatoL")
   {
     userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
                                                m_bufferData, m_throughput);

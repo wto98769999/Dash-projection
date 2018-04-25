@@ -33,7 +33,7 @@ TobascoAlgorithm::TobascoAlgorithm(const videoData &videoData,
       m_bMin(m_videoData.segmentDuration * 2),
       m_bLow(m_videoData.segmentDuration * 4),
       m_bHigh(m_videoData.segmentDuration * 6),
-      m_bOpt(m_videoData.segmentDuration * 5), m_lastRepIndex(0),
+      m_bOpt((m_bLow+ m_bHigh)/2), m_lastRepIndex(0),
       m_lastBuffer(0), m_runningFastStart(true),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1)
 {

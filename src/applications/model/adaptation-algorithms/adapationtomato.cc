@@ -11,9 +11,9 @@ TomatoAlgorithm::TomatoAlgorithm(const videoData &videoData,
                                  const bufferData &bufferData,
                                  const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_lastRepIndex(0), m_targetBuffer(m_videoData.segmentDuration * 5),
-      m_deltaBuffer(m_videoData.segmentDuration * 1),
-      m_bufferMin(m_videoData.segmentDuration * 2),
+      m_lastRepIndex(0), m_targetBuffer(m_videoData.segmentDuration * 10),
+      m_deltaBuffer(m_videoData.segmentDuration * 2),
+      m_bufferMin(m_videoData.segmentDuration * 4),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1)
 {
   NS_LOG_INFO(this);

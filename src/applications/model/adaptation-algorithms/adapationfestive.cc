@@ -29,8 +29,8 @@ FestiveAlgorithm::FestiveAlgorithm(const videoData &videoData,
                                    const bufferData &bufferData,
                                    const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_targetBuffer(m_videoData.segmentDuration * 5),
-      m_delta(m_videoData.segmentDuration * 1), m_alpha(12.0),
+      m_targetBuffer(m_videoData.segmentDuration * 10),
+      m_delta(m_videoData.segmentDuration * 2), m_alpha(12.0),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1),
       m_thrptThrsh(0.95)
 {

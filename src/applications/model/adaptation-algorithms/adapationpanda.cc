@@ -30,7 +30,7 @@ PandaAlgorithm::PandaAlgorithm(const videoData &videoData,
                                const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
       m_kappa(0.28), m_omega(0.3), m_alpha(0.2), m_beta(0.2), m_epsilon(0.15),
-      m_bMin(2), m_highestRepIndex(videoData.averageBitrate[0].size() - 1)
+      m_bMin(4), m_highestRepIndex(videoData.averageBitrate[0].size() - 1)
 {
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,
