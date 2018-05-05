@@ -21,16 +21,14 @@
 
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3
-{
+namespace ns3 {
 
 /**
  * \ingroup tcpStream
  * \brief Implementation of the Festive adaptation algorithm
  */
-class FestiveAlgorithm : public AdaptationAlgorithm
-{
-public:
+class FestiveAlgorithm : public AdaptationAlgorithm {
+ public:
   FestiveAlgorithm(const videoData &videoData, const playbackData &playbackData,
                    const bufferData &bufferData,
                    const throughputData &throughput);
@@ -39,7 +37,7 @@ public:
                             const int64_t clientId, int64_t extraParameter,
                             int64_t extraParameter2);
 
-private:
+ private:
   int64_t m_targetBuffer;
   const int64_t m_delta;
   const double m_alpha;
@@ -48,5 +46,5 @@ private:
   std::vector<int> m_smooth;
 };
 
-} // namespace ns3
+}  // namespace ns3
 #endif /* FESTIVE_ALGORITHM_H */

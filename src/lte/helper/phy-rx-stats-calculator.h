@@ -23,20 +23,20 @@
 #ifndef PHY_RX_STATS_CALCULATOR_H_
 #define PHY_RX_STATS_CALCULATOR_H_
 
+#include <ns3/lte-common.h>
+#include <deque>
+#include <fstream>
+#include <string>
 #include "ns3/lte-stats-calculator.h"
 #include "ns3/nstime.h"
 #include "ns3/uinteger.h"
-#include <string>
-#include <fstream>
-#include <ns3/lte-common.h>
-#include <deque>
 
 namespace ns3 {
 
 /**
  * \ingroup lte
  *
- * Takes care of storing the information generated at PHY layer regarding 
+ * Takes care of storing the information generated at PHY layer regarding
  * reception. Metrics saved are:
  *
  *   - Timestamp (in seconds)
@@ -48,100 +48,100 @@ namespace ns3 {
  *   - MCS for transport block 2 (0 if not used)
  *   - Size of transport block 2 (0 if not used)
  */
-class PhyRxStatsCalculator : public LteStatsCalculator
-{
-public:
+class PhyRxStatsCalculator : public LteStatsCalculator {
+ public:
   /**
    * Constructor
    */
-  PhyRxStatsCalculator ();
+  PhyRxStatsCalculator();
 
   /**
    * Destructor
    */
-  virtual ~PhyRxStatsCalculator ();
+  virtual ~PhyRxStatsCalculator();
 
   // Inherited from ns3::Object
   /**
    *  Register this type.
    *  \return The object TypeId.
    */
-  static TypeId GetTypeId (void);
+  static TypeId GetTypeId(void);
 
   /**
    * Set the name of the file where the UL Rx PHY statistics will be stored.
    *
    * \param outputFilename string with the name of the file
    */
-  void SetUlRxOutputFilename (std::string outputFilename);
+  void SetUlRxOutputFilename(std::string outputFilename);
 
   /**
    * Get the name of the file where the UL RX PHY statistics will be stored.
    * @return the name of the file where the UL RX PHY statistics will be stored
    */
-  std::string GetUlRxOutputFilename (void);
+  std::string GetUlRxOutputFilename(void);
 
   /**
    * Set the name of the file where the DL RX PHY statistics will be stored.
    *
    * @param outputFilename string with the name of the file
    */
-  void SetDlRxOutputFilename (std::string outputFilename);
+  void SetDlRxOutputFilename(std::string outputFilename);
 
   /**
    * Get the name of the file where the DL RX PHY statistics will be stored.
    * @return the name of the file where the DL RX PHY statistics will be stored
    */
-  std::string GetDlRxOutputFilename (void);
+  std::string GetDlRxOutputFilename(void);
 
   /**
    * Notifies the stats calculator that an downlink reception has occurred.
    * @param params Trace information regarding PHY reception stats
    */
-  void DlPhyReception (PhyReceptionStatParameters params);
+  void DlPhyReception(PhyReceptionStatParameters params);
 
   /**
    * Notifies the stats calculator that an uplink reception has occurred.
    * @param params Trace information regarding PHY reception stats
    */
-  void UlPhyReception (PhyReceptionStatParameters params);
+  void UlPhyReception(PhyReceptionStatParameters params);
 
-  /** 
+  /**
    * trace sink
-   * 
-   * \param phyRxStats 
-   * \param path 
-   * \param params 
+   *
+   * \param phyRxStats
+   * \param path
+   * \param params
    */
-  static void DlPhyReceptionCallback (Ptr<PhyRxStatsCalculator> phyRxStats,
-                               std::string path, PhyReceptionStatParameters params);
+  static void DlPhyReceptionCallback(Ptr<PhyRxStatsCalculator> phyRxStats,
+                                     std::string path,
+                                     PhyReceptionStatParameters params);
 
-  /** 
+  /**
    * trace sink
-   * 
-   * \param phyRxStats 
-   * \param path 
-   * \param params 
+   *
+   * \param phyRxStats
+   * \param path
+   * \param params
    */
-  static void UlPhyReceptionCallback (Ptr<PhyRxStatsCalculator> phyRxStats,
-                               std::string path, PhyReceptionStatParameters params);
+  static void UlPhyReceptionCallback(Ptr<PhyRxStatsCalculator> phyRxStats,
+                                     std::string path,
+                                     PhyReceptionStatParameters params);
 
-   /**
-    *Get TBSize
-    **/
-  struct Time_Tbs{
-        int64_t    timestamp;//timestamp
-        uint16_t   tbsize;//tbsize
-        uint32_t   imsi;//mcs
-        double     gama;//indicator of the network, for smooth
-        double     timescale;
-
+  /**
+   *Get TBSize
+   **/
+  struct Time_Tbs {
+    int64_t timestamp;  // timestamp
+    uint16_t tbsize;    // tbsize
+    uint32_t imsi;      // mcs
+    double gama;        // indicator of the network, for smooth
+    double timescale;
   };
-  
-  std::deque <Time_Tbs> GetCorrectTbs(void);
-  Time_Tbs temp;
-private:
 
+  std::deque<Time_Tbs> GetCorrectTbs(void);
+  Time_Tbs temp;
+
+ private:
   /**
    * When writing DL RX PHY statistics first time to file,
    * columns description is added. Then next lines are
@@ -157,9 +157,8 @@ private:
    * files have not been opened yet
    */
   bool m_ulRxFirstWrite;
-
 };
 
-} // namespace ns3
+}  // namespace ns3
 
 #endif /* PHY_RX_STATS_CALCULATOR_H_ */

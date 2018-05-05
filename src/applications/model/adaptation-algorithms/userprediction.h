@@ -2,12 +2,10 @@
 #define USERPREDICTION_ALGORITHM_H
 #include "tcp-stream-userinfo-algorithm.h"
 
-namespace ns3
-{
+namespace ns3 {
 
-class UserPredictionAlgorithm : public UserinfoAlgorithm
-{
-public:
+class UserPredictionAlgorithm : public UserinfoAlgorithm {
+ public:
   UserPredictionAlgorithm(const videoData &videoData,
                           const playbackData &playbackData,
                           const bufferData &bufferData,
@@ -17,8 +15,8 @@ public:
                                  const int64_t clientId, int64_t extraParameter,
                                  int64_t extraParameter2);
 
-private:
+ private:
 };
 
-} // namespace ns3
+}  // namespace ns3
 #endif /* BUFFERCLEAN_ALGORITHM_H */

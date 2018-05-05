@@ -18,8 +18,7 @@
 
 #include "adapationtobasco.h"
 
-namespace ns3
-{
+namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("TobascoAlgorithm");
 NS_OBJECT_ENSURE_REGISTERED(TobascoAlgorithm);
@@ -29,14 +28,19 @@ TobascoAlgorithm::TobascoAlgorithm(const videoData &videoData,
                                    const bufferData &bufferData,
                                    const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_a1(0.85), m_a2(0.65), m_a3(0.75), m_a4(0.85), m_a5(0.95),
-      m_bMin(m_videoData.segmentDuration * 2),
-      m_bLow(m_videoData.segmentDuration * 4),
-      m_bHigh(m_videoData.segmentDuration * 6),
-      m_bOpt((m_bLow+ m_bHigh)/2), m_lastRepIndex(0),
-      m_lastBuffer(0), m_runningFastStart(true),
-      m_highestRepIndex(videoData.averageBitrate[0].size() - 1)
-{
+      m_a1(0.85),
+      m_a2(0.33),
+      m_a3(0.50),
+      m_a4(0.75),
+      m_a5(0.90),
+      m_bMin(m_videoData.segmentDuration * 3),
+      m_bLow(m_videoData.segmentDuration * 8),
+      m_bHigh(m_videoData.segmentDuration * 12),
+      m_bOpt((m_bLow + m_bHigh) / 2),
+      m_lastRepIndex(0),
+      m_lastBuffer(0),
+      m_runningFastStart(true),
+      m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,
                 "The highest quality representation index should be >= 0");
@@ -45,16 +49,14 @@ TobascoAlgorithm::TobascoAlgorithm(const videoData &videoData,
 algorithmReply TobascoAlgorithm::GetNextRep(const int64_t segmentCounter,
                                             const int64_t clientId,
                                             int64_t extraParameter,
-                                            int64_t extraParameter2)
-{
+                                            int64_t extraParameter2) {
   int64_t decisionCase = 0;
   int64_t delayDecision = 0;
   int64_t nextRepIndex = 0;
   int64_t bDelay = 0;
   const int64_t timeNow = Simulator::Now().GetMicroSeconds();
   int64_t bufferNow = 0;
-  if (segmentCounter != 0)
-  {
+  if (segmentCounter != 0) {
     nextRepIndex = m_lastRepIndex;
     bufferNow = m_bufferData.bufferLevelNew.back() -
                 (timeNow - m_throughput.transmissionEnd.back());
@@ -75,49 +77,34 @@ algorithmReply TobascoAlgorithm::GetNextRep(const int64_t segmentCounter,
                               .at(m_lastRepIndex) <= m_a1 * extraParameter)
                        : true;
     if (m_runningFastStart && m_lastRepIndex != m_highestRepIndex &&
-        bufferNow >= m_lastBuffer && isValid)
-    {
-      if (bufferNow < m_bMin)
-      {
-        if (nextHighestRepBitrate <= (m_a2 * extraParameter))
-        {
+        bufferNow >= m_lastBuffer && isValid) {
+      if (bufferNow < m_bMin) {
+        if (nextHighestRepBitrate <= (m_a2 * extraParameter)) {
           decisionCase = 1;
           nextRepIndex = m_lastRepIndex + 1;
         }
-      }
-      else if (bufferNow < m_bLow)
-      {
-        if (nextHighestRepBitrate <= (m_a3 * extraParameter))
-        {
+      } else if (bufferNow < m_bLow) {
+        if (nextHighestRepBitrate <= (m_a3 * extraParameter)) {
           decisionCase = 2;
           nextRepIndex = m_lastRepIndex + 1;
         }
-      }
-      else
-      {
-        if (nextHighestRepBitrate <= (m_a4 * extraParameter))
-        {
+      } else {
+        if (nextHighestRepBitrate <= (m_a4 * extraParameter)) {
           decisionCase = 3;
           nextRepIndex = m_lastRepIndex + 1;
         }
-        if (bufferNow > m_bHigh)
-        {
+        if (bufferNow > m_bHigh) {
           decisionCase = 4;
           delayDecision = 1;
           bDelay = m_bHigh - m_videoData.segmentDuration;
         }
       }
-    }
-    else
-    {
+    } else {
       m_runningFastStart = false;
-      if (bufferNow < m_bMin)
-      {
+      if (bufferNow < m_bMin) {
         decisionCase = 5;
         nextRepIndex = 0;
-      }
-      else if (bufferNow < m_bLow)
-      {
+      } else if (bufferNow < m_bLow) {
         int64_t lastSegmentThroughput =
             8 *
             (m_videoData.segmentSize
@@ -130,35 +117,26 @@ algorithmReply TobascoAlgorithm::GetNextRep(const int64_t segmentCounter,
         if ((m_lastRepIndex != 0) &&
             (m_videoData.averageBitrate
                  .at(m_videoData.userInfo.at(segmentCounter))
-                 .at(m_lastRepIndex) >= lastSegmentThroughput))
-        {
+                 .at(m_lastRepIndex) >= lastSegmentThroughput)) {
           decisionCase = 6;
           nextRepIndex = m_lastRepIndex - 1;
         }
-      }
-      else if (bufferNow < m_bHigh)
-      {
+      } else if (bufferNow < m_bHigh) {
         if ((m_lastRepIndex == m_highestRepIndex) ||
-            (nextHighestRepBitrate >= m_a5 * extraParameter))
-        {
+            (nextHighestRepBitrate >= m_a5 * extraParameter)) {
           decisionCase = 7;
           delayDecision = 2;
           bDelay = (int64_t)(
               std::max(bufferNow - m_videoData.segmentDuration, m_bOpt));
         }
-      }
-      else
-      {
+      } else {
         if ((m_lastRepIndex == m_highestRepIndex) ||
-            (nextHighestRepBitrate >= m_a5 * extraParameter))
-        {
+            (nextHighestRepBitrate >= m_a5 * extraParameter)) {
           decisionCase = 8;
           delayDecision = 3;
           bDelay = (int64_t)(
               std::max(bufferNow - m_videoData.segmentDuration, m_bOpt));
-        }
-        else
-        {
+        } else {
           decisionCase = 9;
           nextRepIndex = m_lastRepIndex + 1;
         }
@@ -166,14 +144,10 @@ algorithmReply TobascoAlgorithm::GetNextRep(const int64_t segmentCounter,
     }
   }
 
-  if (segmentCounter != 0 && delayDecision != 0)
-  {
-    if (bDelay > bufferNow)
-    {
+  if (segmentCounter != 0 && delayDecision != 0) {
+    if (bDelay > bufferNow) {
       bDelay = 0;
-    }
-    else
-    {
+    } else {
       bDelay = bufferNow - bDelay;
     }
   }
@@ -191,4 +165,4 @@ algorithmReply TobascoAlgorithm::GetNextRep(const int64_t segmentCounter,
   return answer;
 }
 
-} // namespace ns3
+}  // namespace ns3

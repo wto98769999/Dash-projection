@@ -21,12 +21,10 @@
 
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3
-{
+namespace ns3 {
 
-class PandaAlgorithm : public AdaptationAlgorithm
-{
-public:
+class PandaAlgorithm : public AdaptationAlgorithm {
+ public:
   PandaAlgorithm(const videoData &videoData, const playbackData &playbackData,
                  const bufferData &bufferData,
                  const throughputData &throughput);
@@ -35,7 +33,7 @@ public:
                             const int64_t clientId, int64_t extraParameter,
                             int64_t extraParameter2);
 
-private:
+ private:
   int FindLargest(const double smoothBandwidthShare,
                   const int64_t segmentCounter, const double delta);
   const double m_kappa;
@@ -52,5 +50,5 @@ private:
   double m_lastVideoIndex;
 };
 
-} // namespace ns3
+}  // namespace ns3
 #endif /* PANDA_ALGORITHM_H */

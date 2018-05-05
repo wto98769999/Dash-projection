@@ -20,16 +20,14 @@
 #define TOBASCO_ALGORITHM_H
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3
-{
+namespace ns3 {
 
 /**
  * \ingroup tcpStream
  * \brief Implementation of the Tobasco adaptation algorithm
  */
-class TobascoAlgorithm : public AdaptationAlgorithm
-{
-public:
+class TobascoAlgorithm : public AdaptationAlgorithm {
+ public:
   TobascoAlgorithm(const videoData &videoData, const playbackData &playbackData,
                    const bufferData &bufferData,
                    const throughputData &throughput);
@@ -38,7 +36,7 @@ public:
                             const int64_t clientId, int64_t extraParameter,
                             int64_t extraParameter2);
 
-private:
+ private:
   const double m_a1;
   const double m_a2;
   const double m_a3;
@@ -53,5 +51,5 @@ private:
   bool m_runningFastStart;
   const int64_t m_highestRepIndex;
 };
-} // namespace ns3
+}  // namespace ns3
 #endif /* TOBASCO_ALGORITHM_H */

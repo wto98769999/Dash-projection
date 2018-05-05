@@ -3,12 +3,10 @@
 
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3
-{
+namespace ns3 {
 
-class TomatoAlgorithm : public AdaptationAlgorithm
-{
-public:
+class TomatoAlgorithm : public AdaptationAlgorithm {
+ public:
   TomatoAlgorithm(const videoData &videoData, const playbackData &playbackData,
                   const bufferData &bufferData,
                   const throughputData &throughput);
@@ -17,7 +15,7 @@ public:
                             const int64_t clientId, int64_t extraParameter,
                             int64_t extraParameter2);
 
-private:
+ private:
   int64_t m_lastRepIndex;
   int64_t m_targetBuffer;
   int64_t m_deltaBuffer;
@@ -25,5 +23,5 @@ private:
   const int64_t m_highestRepIndex;
 };
 
-} // namespace ns3
+}  // namespace ns3
 #endif /* TOMATO_ALGORITHM_H */

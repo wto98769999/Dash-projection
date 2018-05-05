@@ -2,12 +2,10 @@
 #define BANDWIDTHLONGAVG_ALGORITHM_H
 #include "tcp-stream-bandwidth-algorithm.h"
 
-namespace ns3
-{
+namespace ns3 {
 
-class BandwidthLongAvgAlgorithm : public BandwidthAlgorithm
-{
-public:
+class BandwidthLongAvgAlgorithm : public BandwidthAlgorithm {
+ public:
   BandwidthLongAvgAlgorithm(const videoData &videoData,
                             const playbackData &playbackData,
                             const bufferData &bufferData,
@@ -18,12 +16,12 @@ public:
                                    int64_t extraParameter,
                                    int64_t extraParameter2);
 
-private:
+ private:
   const int64_t m_bandwidthAlgoIndex;
-  double m_lastBandwidthEstimate; // Last bandwidthEstimate Value
+  double m_lastBandwidthEstimate;  // Last bandwidthEstimate Value
   int64_t m_lastRepIndex;
   const int64_t m_highestRepIndex;
 };
 
-} // namespace ns3
+}  // namespace ns3
 #endif /* BANDWIDTHLONGAVG_ALGORITHM_H */

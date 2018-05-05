@@ -1,7 +1,6 @@
 #include "bandwidthwharmonic.h"
 
-namespace ns3
-{
+namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("BandwidthWHarmonicAlgorithm");
 NS_OBJECT_ENSURE_REGISTERED(BandwidthWHarmonicAlgorithm);
@@ -10,9 +9,9 @@ BandwidthWHarmonicAlgorithm::BandwidthWHarmonicAlgorithm(
     const videoData &videoData, const playbackData &playbackData,
     const bufferData &bufferData, const throughputData &throughput)
     : BandwidthAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_bandwidthAlgoIndex(5), m_windowSize(5),
-      m_highestRepIndex(videoData.averageBitrate[0].size() - 1)
-{
+      m_bandwidthAlgoIndex(5),
+      m_windowSize(5),
+      m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,
                 "The highest quality representation index should be >= 0");
@@ -20,22 +19,19 @@ BandwidthWHarmonicAlgorithm::BandwidthWHarmonicAlgorithm(
 
 bandwidthAlgoReply BandwidthWHarmonicAlgorithm::BandwidthAlgo(
     const int64_t segmentCounter, const int64_t clientId,
-    int64_t extraParameter, int64_t extraParameter2)
-{
+    int64_t extraParameter, int64_t extraParameter2) {
   bandwidthAlgoReply answer;
   answer.bandwidthAlgoIndex = 3;
   const int64_t timeNow = Simulator::Now().GetMicroSeconds();
   answer.decisionTime = timeNow;
   double bandwidthEstimate = 0.0;
 
-  if (segmentCounter != 0)
-  {
-    int64_t sumThroughput = 0; // bit
+  if (segmentCounter != 0) {
+    int64_t sumThroughput = 0;  // bit
     double transmissionTime = 0.0;
-    if (segmentCounter < m_windowSize) // 5
+    if (segmentCounter < m_windowSize)  // 5
     {
-      for (int64_t i = 0; i != segmentCounter; i++)
-      {
+      for (int64_t i = 0; i != segmentCounter; i++) {
         sumThroughput +=
             8 * m_videoData.segmentSize.at(m_videoData.userInfo.at(i))
                     .at(m_videoData.repIndex.at(i))
@@ -46,12 +42,9 @@ bandwidthAlgoReply BandwidthWHarmonicAlgorithm::BandwidthAlgo(
       bandwidthEstimate =
           (double)sumThroughput * 1000000.0 / (transmissionTime);
       answer.decisionCase = 1;
-    }
-    else
-    {
+    } else {
       for (int64_t i = segmentCounter - m_windowSize; i != segmentCounter;
-           i++)
-      {
+           i++) {
         sumThroughput +=
             8 * m_videoData.segmentSize.at(m_videoData.userInfo.at(i))
                     .at(m_videoData.repIndex.at(i))
@@ -62,9 +55,7 @@ bandwidthAlgoReply BandwidthWHarmonicAlgorithm::BandwidthAlgo(
       bandwidthEstimate = (double)sumThroughput * 1000000.0 / transmissionTime;
       answer.decisionCase = 2;
     }
-  }
-  else
-  {
+  } else {
     answer.bandwidthEstimate = bandwidthEstimate;
     answer.decisionCase = 0;
   }
@@ -72,4 +63,4 @@ bandwidthAlgoReply BandwidthWHarmonicAlgorithm::BandwidthAlgo(
   return answer;
 }
 
-} // namespace ns3
+}  // namespace ns3

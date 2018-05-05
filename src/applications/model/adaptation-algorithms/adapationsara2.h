@@ -3,12 +3,10 @@
 
 #include "tcp-stream-adaptation-algorithm.h"
 
-namespace ns3
-{
+namespace ns3 {
 
-class Sara2Algorithm : public AdaptationAlgorithm
-{
-public:
+class Sara2Algorithm : public AdaptationAlgorithm {
+ public:
   Sara2Algorithm(const videoData &videoData, const playbackData &playbackData,
                  const bufferData &bufferData,
                  const throughputData &throughput);
@@ -17,7 +15,7 @@ public:
                             const int64_t clientId, int64_t extraParameter,
                             int64_t extraParameter2);
 
-private:
+ private:
   void Normalize(const videoData &videoData, std::vector<double> &normalized,
                  double &normalizationConstant);
   int64_t Esmoothing(const videoData &videoData, const int64_t &segmentCounter,
@@ -44,14 +42,14 @@ private:
   double m_gama3;
   std::vector<double> m_normalized;
   std::vector<int64_t> m_repIndex;
-  std::vector<double> m_prediction1; // S1
-  std::vector<double> m_prediction2; // S2
-  std::vector<double> m_prediction3; // last -> alpha =1 ES1
-  std::vector<double> m_prediction4; // improvedS2 = S2*(1-a) + a * average a =
-                                     // alpha3 * abs( delta S2' / average )
+  std::vector<double> m_prediction1;  // S1
+  std::vector<double> m_prediction2;  // S2
+  std::vector<double> m_prediction3;  // last -> alpha =1 ES1
+  std::vector<double> m_prediction4;  // improvedS2 = S2*(1-a) + a * average a =
+                                      // alpha3 * abs( delta S2' / average )
   double m_normalizationConstant;
   const int64_t m_highestRepIndex;
 };
 
-} // namespace ns3
+}  // namespace ns3
 #endif /* SARA2_ALGORITHM_H */
