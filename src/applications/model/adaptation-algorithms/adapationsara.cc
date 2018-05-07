@@ -12,8 +12,8 @@ SaraAlgorithm::SaraAlgorithm(const videoData &videoData,
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
       m_lastRepIndex(0),
       m_bufferHigh(m_videoData.segmentDuration * 12),
-      m_bufferLow(m_videoData.segmentDuration * 8),
-      m_bufferMin(m_videoData.segmentDuration * 4),
+      m_bufferLow(m_videoData.segmentDuration * 10),
+      m_bufferMin(m_videoData.segmentDuration * 8),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,

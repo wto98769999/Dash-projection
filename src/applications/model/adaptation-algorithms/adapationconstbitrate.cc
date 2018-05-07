@@ -38,7 +38,8 @@ algorithmReply constbitrateAlgorithm::GetNextRep(const int64_t segmentCounter,
     int64_t randBuf =
         lowerBound + (int64_t)(std::rand() % (upperBound - (lowerBound) + 1));
     if (bufferNow > randBuf) {
-      answer.nextDownloadDelay = bufferNow - randBuf;
+      // answer.nextDownloadDelay = bufferNow - randBuf;
+      answer.nextDownloadDelay = 0;
       answer.delayDecisionCase = 1;
     } else {
       answer.nextDownloadDelay = 0;

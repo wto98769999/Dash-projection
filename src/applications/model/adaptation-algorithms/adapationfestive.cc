@@ -32,7 +32,7 @@ FestiveAlgorithm::FestiveAlgorithm(const videoData &videoData,
       m_delta(m_videoData.segmentDuration * 2),
       m_alpha(12.0),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1),
-      m_thrptThrsh(0.95) {
+      m_thrptThrsh(0.90) {
   NS_LOG_INFO(this);
   m_smooth.push_back(3);  // after how many steps switch up is possible
   m_smooth.push_back(1);  // switch up by how many representatations at once
@@ -60,7 +60,7 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
   int64_t bufferNow = m_bufferData.bufferLevelNew.back() -
                       (timeNow - m_throughput.transmissionEnd.back());
 
-  if (segmentCounter <= 3) {
+  if (segmentCounter < 3) {
     answer.nextRepIndex = 0;
     answer.decisionCase = 1;
     return answer;
@@ -89,8 +89,6 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
     decisionMade = true;
   }
 
-  assert(m_smooth.at(0) > 0);
-  assert(m_smooth.at(1) == 1);
   if (currentRepIndex < m_highestRepIndex && !decisionMade) {
     int count = 0;
     for (unsigned _sd = m_playbackData.playbackIndex.size() - 1; _sd-- > 0;) {

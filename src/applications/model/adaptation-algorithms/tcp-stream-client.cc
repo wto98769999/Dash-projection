@@ -535,10 +535,7 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
       break;
     }
   }
-  // NS_LOG_INFO("===cum_tbs " << cum_tbs << "====Pause startTime " <<
-  // (double)StartTime/1000 <<"====Pause endTime " << (double)EndTime/1000 << "
-  // =====updateTimescale " << (double)updateTimescale/1000 << " =====InstantBW
-  // " << phy_throughput / 1000000 << "Mbps");
+
   if (phy_throughput.empty())
     bandwidthEstimate_inter = 0;
   else {
@@ -588,7 +585,7 @@ static double GetPhyRate(Ptr<PhyRxStatsCalculator> phy_rx_stats,
   std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats =
       phy_rx_stats->GetCorrectTbs();
   double bandwidthEstimate_update =
-      0.93 *
+      0.92 *
       BWEstimate(phy_stats, pause);  // update Global val BandWidth by add all
   return bandwidthEstimate_update;
 }
@@ -627,13 +624,13 @@ void TcpStreamClient::RequestRepIndex() {
                 "The algorithm returned a representation index that's higher "
                 "than the maximum");
 
-  std::cout << "**At :" << std::fixed << std::setprecision(3)
-            << answer.decisionTime / 1000000.0 << ", REP " << m_segmentCounter
-            << ", BRT " << (m_currentRepIndex + 1) * 10 << ", EBW "
+  std::cout << "** At :" << std::fixed << std::setprecision(3)
+            << answer.decisionTime / 1000000.0 << ", Rep " << m_segmentCounter
+            << ", Rate " << (m_currentRepIndex + 1) * 10 << ", Bw "
             << std::fixed << std::setprecision(3)
-            << answer.estimateTh / 1000000.0 << ", DET " << std::fixed
+            << answer.estimateTh / 1000000.0 << ", Delay " << std::fixed
             << std::setprecision(3) << answer.nextDownloadDelay / 1000000.0
-            << "  **" << std::endl;
+            << " **" << std::endl;
 
   m_playbackData.playbackIndex.push_back(answer.nextRepIndex);
   m_bDelay = answer.nextDownloadDelay;

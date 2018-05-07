@@ -28,12 +28,12 @@ PandaAlgorithm::PandaAlgorithm(const videoData &videoData,
                                const bufferData &bufferData,
                                const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_kappa(0.5),
-      m_omega(10),
-      m_alpha(0.2),
-      m_beta(0.2),
-      m_epsilon(0.15),
-      m_bMin(4),
+      m_kappa(0.85),
+      m_omega(5.0),
+      m_alpha(0.5),
+      m_beta(0.5),
+      m_epsilon(0.10),
+      m_bMin(8),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,
@@ -69,6 +69,7 @@ algorithmReply PandaAlgorithm::GetNextRep(const int64_t segmentCounter,
                  m_throughput.transmissionRequested.back()) /
                 1e6)) /
       1e6;
+  // std::cout << throughputMeasured << std::endl;
   if (segmentCounter == 1) {
     m_lastBandwidthShare = throughputMeasured;
     m_lastSmoothBandwidthShare = m_lastBandwidthShare;
@@ -87,7 +88,6 @@ algorithmReply PandaAlgorithm::GetNextRep(const int64_t segmentCounter,
                                               throughputMeasured + m_omega))) *
           actualInterrequestTime +
       m_lastBandwidthShare;
-
   if (bandwidthShare < 0) {
     bandwidthShare = 0;
   }
@@ -98,7 +98,6 @@ algorithmReply PandaAlgorithm::GetNextRep(const int64_t segmentCounter,
       ((-m_alpha * (m_lastSmoothBandwidthShare - bandwidthShare)) *
        actualInterrequestTime) +
       m_lastSmoothBandwidthShare;
-
   m_lastSmoothBandwidthShare = smoothBandwidthShare;
 
   double deltaUp = m_omega + m_epsilon * smoothBandwidthShare;
@@ -107,22 +106,9 @@ algorithmReply PandaAlgorithm::GetNextRep(const int64_t segmentCounter,
   int rDown = FindLargest(smoothBandwidthShare, segmentCounter - 1, deltaDown);
 
   int videoIndex;
-  if ((m_videoData.averageBitrate.at(m_videoData.userInfo.at(segmentCounter))
-           .at(m_lastVideoIndex)) <
-      (m_videoData.averageBitrate.at(m_videoData.userInfo.at(segmentCounter))
-           .at(rUp))) {
+  if (m_lastVideoIndex < rUp) {
     videoIndex = rUp;
-  } else if ((m_videoData.averageBitrate
-                  .at(m_videoData.userInfo.at(segmentCounter))
-                  .at(rUp)) <= (m_videoData.averageBitrate
-                                    .at(m_videoData.userInfo.at(segmentCounter))
-                                    .at(m_lastVideoIndex)) &&
-             (m_videoData.averageBitrate
-                  .at(m_videoData.userInfo.at(segmentCounter))
-                  .at(m_lastVideoIndex)) <=
-                 (m_videoData.averageBitrate
-                      .at(m_videoData.userInfo.at(segmentCounter))
-                      .at(rDown))) {
+  } else if (m_lastVideoIndex < rDown) {
     videoIndex = m_lastVideoIndex;
   } else {
     videoIndex = rDown;
@@ -177,6 +163,8 @@ int PandaAlgorithm::FindLargest(const double smoothBandwidthShare,
       largestBitrateIndex = i;
     }
   }
+  // std::cout << smoothBandwidthShare << " " << delta << " " <<
+  // largestBitrateIndex << std::endl;
   return largestBitrateIndex;
 }
 

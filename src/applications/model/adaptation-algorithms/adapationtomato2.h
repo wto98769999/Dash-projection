@@ -21,6 +21,7 @@ class Tomato2Algorithm : public AdaptationAlgorithm {
   int64_t m_deltaBuffer;
   int64_t m_bufferMin;
   int64_t m_lastBuffer;
+  double m_beta;
   const int64_t m_highestRepIndex;
 };
 

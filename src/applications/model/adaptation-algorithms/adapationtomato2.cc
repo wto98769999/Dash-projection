@@ -11,10 +11,11 @@ Tomato2Algorithm::Tomato2Algorithm(const videoData &videoData,
                                    const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
       m_lastRepIndex(0),
-      m_targetBuffer(m_videoData.segmentDuration * 5),
+      m_targetBuffer(m_videoData.segmentDuration * 6),
       m_deltaBuffer(m_videoData.segmentDuration * 1),
-      m_bufferMin(m_videoData.segmentDuration * 4),
+      m_bufferMin(m_videoData.segmentDuration * 3),
       m_lastBuffer(0),
+      m_beta(0.0),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,
@@ -25,6 +26,7 @@ algorithmReply Tomato2Algorithm::GetNextRep(const int64_t segmentCounter,
                                             const int64_t clientId,
                                             int64_t extraParameter,
                                             int64_t extraParameter2) {
+  // bugs: 帶寬下降時，不應出現downloaddelay
   algorithmReply answer;
   answer.decisionCase = 0;
   answer.delayDecisionCase = 0;
@@ -64,13 +66,14 @@ algorithmReply Tomato2Algorithm::GetNextRep(const int64_t segmentCounter,
             nextHighestIndex = 0;
           else if (bufferNow < m_lastBuffer - m_videoData.segmentDuration)
             nextHighestIndex = std::min(m_lastRepIndex - 1, m_lastRepIndex / 2);
-          else if (bufferNow > m_targetBuffer)
+          else if (bufferNow < m_lastBuffer - m_videoData.segmentDuration / 2)
+            nextHighestIndex = m_lastRepIndex - 1;
+          else  // if (bufferNow > m_lastBuffer-m_videoData.segmentDuration / 2)
             nextHighestIndex = m_lastRepIndex;
-          else
-            nextHighestIndex =
-                (bufferNow > m_targetBuffer * 0.70)
-                    ? m_lastRepIndex - 1
-                    : std::min(m_lastRepIndex - 1, nextHighestIndex);
+          nextHighestIndex =
+              (bufferNow > m_targetBuffer)
+                  ? m_lastRepIndex - 1
+                  : std::min(m_lastRepIndex - 1, nextHighestIndex);
           answer.decisionCase = 4;
         } else {
           answer.decisionCase = 5;
@@ -81,17 +84,17 @@ algorithmReply Tomato2Algorithm::GetNextRep(const int64_t segmentCounter,
         answer.decisionCase = 2;
       }
     }
-    double beta = 0.9 + (double)answer.nextRepIndex / (double)m_highestRepIndex;
-    if (bufferNow > m_targetBuffer * beta) {
-      int64_t lowerBound = m_targetBuffer * beta - m_deltaBuffer / 2;
-      int64_t upperBound = m_targetBuffer * beta + m_deltaBuffer / 2;
-      int64_t randBuf =
-          (int64_t)lowerBound + (std::rand() % (upperBound - (lowerBound) + 1));
-      if (bufferNow > randBuf) {
-        // answer.nextDownloadDelay = (int64_t)(bufferNow - randBuf);
-        answer.nextDownloadDelay = (int64_t)(bufferNow - m_targetBuffer * beta);
-        answer.delayDecisionCase = 1;
-      }
+    m_beta = 1.0 + (double)answer.nextRepIndex / (double)m_highestRepIndex;
+    if (bufferNow > m_targetBuffer * m_beta &&
+        answer.nextRepIndex >= m_lastRepIndex) {
+      // int64_t lowerBound = m_targetBuffer * beta - m_deltaBuffer / 2;
+      // int64_t upperBound = m_targetBuffer * beta + m_deltaBuffer / 2;
+      // int64_t randBuf = (int64_t)lowerBound + (std::rand() % (upperBound -
+      // (lowerBound) + 1)); if (bufferNow > randBuf) {
+      // answer.nextDownloadDelay = (int64_t)(bufferNow - randBuf);
+      answer.nextDownloadDelay = (int64_t)(bufferNow - m_targetBuffer * m_beta);
+      answer.delayDecisionCase = 1;
+      //}
     } else {
       answer.nextDownloadDelay = 0;
       answer.decisionCase = 0;
@@ -104,6 +107,8 @@ algorithmReply Tomato2Algorithm::GetNextRep(const int64_t segmentCounter,
   }
   answer.estimateTh = extraParameter;
   m_lastRepIndex = answer.nextRepIndex;
+  m_lastBuffer =
+      answer.nextDownloadDelay > 0 ? m_targetBuffer * m_beta : bufferNow;
 
   return answer;
 }

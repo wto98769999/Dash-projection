@@ -20,6 +20,16 @@
 // - WiFi connection
 // - Tracing of throughput, packet information is done in the client
 
+#include <errno.h>
+#include <ns3/buildings-module.h>
+#include <ns3/config-store-module.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 #include "ns3/applications-module.h"
 #include "ns3/building-position-allocator.h"
 #include "ns3/core-module.h"
@@ -34,20 +44,9 @@
 #include "ns3/object.h"
 #include "ns3/point-to-point-helper.h"
 #include "ns3/point-to-point-module.h"
-#include <errno.h>
-#include <fstream>
-#include <iostream>
-#include <ns3/buildings-module.h>
-#include <ns3/config-store-module.h>
-#include <stdio.h>
-#include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <vector>
 
 template <typename T>
-std::string ToString(T val)
-{
+std::string ToString(T val) {
   std::stringstream stream;
   stream << val;
   return stream.str();
@@ -56,25 +55,31 @@ std::string ToString(T val)
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("TcpStreamExample");
 
-int main(int argc, char *argv[])
-{
+static void ACEvent(Ptr<ConstantAccelerationMobilityModel> cvmm, Vector &speed,
+                    Vector &delta) {
+  cvmm->SetVelocityAndAcceleration(speed, delta);
+}
+static void COEvent(Ptr<ConstantVelocityMobilityModel> cvmm, Vector &speed) {
+  cvmm->SetVelocity(speed);
+}
+int main(int argc, char *argv[]) {
   LogComponentEnable("TcpStreamExample", LOG_LEVEL_INFO);
   LogComponentEnable("TcpStreamClientApplication", LOG_LEVEL_INFO);
   LogComponentEnable("TcpStreamServerApplication", LOG_LEVEL_INFO);
 
-  uint64_t segmentDuration = 1000000; // ms==> 1s/segment
+  uint64_t segmentDuration = 1000000;  // ms==> 1s/segment
   uint32_t simulationId = 4;
   uint32_t numberOfClients = 1;
-  uint32_t numberOfEnbs = 2;             // 7
-  std::string adaptationAlgo = "tomato"; //"";
-  std::string app_type = "Dash";         // Bulk sender | On-Off Sender | Dash
-  double eNbTxPower = 43.0;              // 43
-  int fading_model = 0;                  // 0 for etu, 1 for eva
-  int load = 0;                          // 0 for low load, 1 for high load
-  int rlc_mode = 3;                      // UM = 2; AM = 3
+  uint32_t numberOfEnbs = 8;              // 7
+  std::string adaptationAlgo = "tomato";  //"";
+  std::string app_type = "Dash";          // Bulk sender | On-Off Sender | Dash
+  double eNbTxPower = 43.0;               // 43
+  int fading_model = 0;                   // 0 for etu, 1 for eva
+  int load = 0;                           // 0 for low load, 1 for high load
+  int rlc_mode = 3;                       // UM = 2; AM = 3
   int tx_mode = 2;
   int bandwidth = 100;
-  std::string data_rate = "100Gbps"; // 100Gbps
+  std::string data_rate = "100Gbps";  // 100Gbps
 
   CommandLine cmd;
   cmd.Usage("Simulation of streaming with DASH.\n");
@@ -112,9 +117,9 @@ int main(int argc, char *argv[])
   Config::SetDefault("ns3::LteSpectrumPhy::DataErrorModelEnabled",
                      BooleanValue(true));
   Config::SetDefault("ns3::LteEnbRrc::DefaultTransmissionMode",
-                     UintegerValue(tx_mode)); // MIMO
+                     UintegerValue(tx_mode));  // MIMO
   Config::SetDefault("ns3::LteEnbRrc::EpsBearerToRlcMapping",
-                     EnumValue(rlc_mode)); // RLC_UM_Always=2; RLC_AM_Always=3
+                     EnumValue(rlc_mode));  // RLC_UM_Always=2; RLC_AM_Always=3
   Config::SetDefault("ns3::LteEnbPhy::TxPower", DoubleValue(eNbTxPower));
   GlobalValue::Bind("ChecksumEnabled", BooleanValue(true));
   Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue(1446));
@@ -135,23 +140,24 @@ int main(int argc, char *argv[])
   std::ifstream ifTraceFile;
   std::string fading_trace_path;
 
-  if (simulationId == 4 || simulationId == 2)
-    fading_model = 1;
-  else
-    fading_model = 0;
+  if (simulationId == 0) fading_model = 0;
+  if (simulationId == 1) fading_model = 0;
+  if (simulationId == 2) fading_model = 0;
+  if (simulationId == 3) fading_model = 1;
+  if (simulationId == 4) fading_model = 1;
 
   if (fading_model == 0)
     fading_trace_path =
         "../../src/lte/model/fading-traces/fading_trace_ETU_3kmph.fad";
-  else
+  if (fading_model == 1)
     fading_trace_path =
         "../../src/lte/model/fading-traces/fading_trace_EVA_60kmph.fad";
 
   ifTraceFile.open(fading_trace_path.c_str(), std::ifstream::in);
+
   if (ifTraceFile.good())
     lteHelper->SetFadingModelAttribute("TraceFilename",
                                        StringValue(fading_trace_path.c_str()));
-
   else
     lteHelper->SetFadingModelAttribute(
         "TraceFilename", StringValue(fading_trace_path.substr(6).c_str()));
@@ -178,13 +184,13 @@ int main(int argc, char *argv[])
   p2ph.SetChannelAttribute("Delay", TimeValue(Seconds(0.001)));
   NetDeviceContainer internetDevices = p2ph.Install(pgw, remote_host);
   Ipv4AddressHelper ipv4h;
-  ipv4h.SetBase("1.0.0.0", "255.0.0.0");
+  ipv4h.SetBase("1.0.0.0", "256.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign(internetDevices);
   Ipv4StaticRoutingHelper ipv4RoutingHelper;
   Ptr<Ipv4StaticRouting> remote_host_static_routing =
       ipv4RoutingHelper.GetStaticRouting(remote_host->GetObject<Ipv4>());
   remote_host_static_routing->AddNetworkRouteTo(Ipv4Address("7.0.0.0"),
-                                                Ipv4Mask("255.0.0.0"), 1);
+                                                Ipv4Mask("256.0.0.0"), 1);
 
   NodeContainer eNb_nodes;
   NodeContainer ue_nodes;
@@ -195,8 +201,14 @@ int main(int argc, char *argv[])
   Ptr<ListPositionAllocator> positionAlloc_eNB =
       CreateObject<ListPositionAllocator>();
 
-  positionAlloc_eNB->Add(Vector(0, 0, 0));   // eNB_0
-  positionAlloc_eNB->Add(Vector(160, 0, 0)); // eNB_1
+  positionAlloc_eNB->Add(Vector(0, 0, 0));     // eNB_0
+  positionAlloc_eNB->Add(Vector(180, 0, 0));   // eNB_1
+  positionAlloc_eNB->Add(Vector(360, 0, 0));   // eNB_2
+  positionAlloc_eNB->Add(Vector(540, 0, 0));   // eNB_3
+  positionAlloc_eNB->Add(Vector(720, 0, 0));   // eNB_4
+  positionAlloc_eNB->Add(Vector(900, 0, 0));   // eNB_5
+  positionAlloc_eNB->Add(Vector(1080, 0, 0));  // eNB_6
+  positionAlloc_eNB->Add(Vector(1260, 0, 0));  // eNB_7
 
   enbMobility.SetPositionAllocator(positionAlloc_eNB);
   enbMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
@@ -220,87 +232,105 @@ int main(int argc, char *argv[])
   clientPosLog.open(clientPos.c_str());
   NS_ASSERT_MSG(clientPosLog.is_open(), "Couldn't open clientPosLog file");
 
-  switch (simulationId)
-  {
-  case 0:
-  {
-    Ptr<ListPositionAllocator> positionAlloc =
-        CreateObject<ListPositionAllocator>();
-    Ptr<RandomDiscPositionAllocator> randPosAlloc =
-        CreateObject<RandomDiscPositionAllocator>();
-    for (uint i = 0; i < numberOfClients; i++)
-    {
-      randPosAlloc->SetX(0);
-      randPosAlloc->SetY(0);
-      Vector pos = Vector(randPosAlloc->GetNext());
-      positionAlloc->Add(pos);
+  switch (simulationId) {
+    case 0: {  //固定位置
+      Ptr<ListPositionAllocator> positionAlloc =
+          CreateObject<ListPositionAllocator>();
+      Ptr<RandomDiscPositionAllocator> randPosAlloc =
+          CreateObject<RandomDiscPositionAllocator>();
+      for (uint i = 0; i < numberOfClients; i++) {
+        randPosAlloc->SetX(0);
+        randPosAlloc->SetY(0);
+        // Vector pos = Vector(randPosAlloc->GetNext());
+        Vector pos = Vector(54, 54, 0);
+        positionAlloc->Add(pos);
 
-      clientPosLog << ToString(pos.x) << ", " << ToString(pos.y) << ", "
-                   << ToString(pos.z) << "\n";
-      clientPosLog.flush();
+        clientPosLog << ToString(pos.x) << ", " << ToString(pos.y) << ", "
+                     << ToString(pos.z) << "\n";
+        clientPosLog.flush();
+      }
+      MobilityHelper ueMobility_1;
+      ueMobility_1.SetPositionAllocator(positionAlloc);
+      ueMobility_1.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+      ueMobility_1.Install(ue_nodes);
+      break;
     }
-    MobilityHelper ueMobility_1;
-    ueMobility_1.SetPositionAllocator(positionAlloc);
-    ueMobility_1.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-    ueMobility_1.Install(ue_nodes);
-    break;
-  }
-  case 1:
-  {
-    MobilityHelper ueMobility_2;
-    ueMobility_2.SetMobilityModel(
-        "ns3::RandomWalk2dMobilityModel", "Mode", StringValue("Time"), "Time",
-        StringValue("2s"), "Speed",
-        StringValue("ns3::ConstantRandomVariable[Constant=0.83333]"), "Bounds",
-        RectangleValue(Rectangle(-200, 200, -200, 200)));
-    ueMobility_2.Install(ue_nodes.Get(0));
-    break;
-  }
-  case 2:
-  {
-    MobilityHelper ueMobility_3;
-    ueMobility_3.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
-    ueMobility_3.SetPositionAllocator(
-        "ns3::UniformDiscPositionAllocator", "X", DoubleValue(90.0), "Y",
-        DoubleValue(-15.0), "rho", DoubleValue(0));
-    ueMobility_3.Install(ue_nodes);
-    for (int64_t i = 0; i < ue_nodes.GetN(); i++)
-    {
-      Ptr<ConstantVelocityMobilityModel> cvmm =
-          ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
-      cvmm->SetVelocity(Vector(0, 0.833, 0.0));
+    case 1: {  //隨機走動
+      MobilityHelper ueMobility_2;
+      ueMobility_2.SetMobilityModel(
+          "ns3::RandomWalk2dMobilityModel", "Mode", StringValue("Time"), "Time",
+          StringValue("1s"), "Speed",
+          StringValue("ns3::ConstantRandomVariable[Constant=0.83333]"),
+          "Bounds", RectangleValue(Rectangle(-50, -40, -50, -30)));
+      ueMobility_2.Install(ue_nodes.Get(0));
+      break;
     }
-    break;
-  }
-  case 3:
-  {
-    MobilityHelper ueMobility_4;
-    ueMobility_4.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
-    ueMobility_4.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X",
-                                      DoubleValue(-90.0), "Y",
-                                      DoubleValue(-0.0), "rho", DoubleValue(0));
-    ueMobility_4.Install(ue_nodes);
-    for (int64_t i = 0; i < ue_nodes.GetN(); i++)
-    {
-      Ptr<ConstantVelocityMobilityModel> cvmm =
-          ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
-      cvmm->SetVelocity(Vector(0.83333, 0.0, 0.0));
+    case 2: {  //在小區的邊緣試探
+      MobilityHelper ueMobility_3;
+      ueMobility_3.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
+      ueMobility_3.SetPositionAllocator(
+          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(80.0), "Y",
+          DoubleValue(-16.0), "rho", DoubleValue(0));
+      ueMobility_3.Install(ue_nodes);
+      for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
+        Ptr<ConstantVelocityMobilityModel> cvmm =
+            ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
+        cvmm->SetVelocity(Vector(0, 0.12, 0.0));
+      }
+      break;
     }
-    break;
-  }
-  case 4:
-  {
-    MobilityHelper ueMobility_5;
-    ueMobility_5.SetMobilityModel("ns3::ConstantAccelerationMobilityModel");
-    ueMobility_5.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X",
-                                      DoubleValue(-80.0), "Y", DoubleValue(0),
-                                      "rho", DoubleValue(0));
-    ueMobility_5.Install(ue_nodes.Get(0));
-    Ptr<ConstantAccelerationMobilityModel> cvmm =
-        ue_nodes.Get(0)->GetObject<ConstantAccelerationMobilityModel>();
-    cvmm->SetVelocityAndAcceleration(Vector(0, 0, 0), Vector(0.036, 0.0, 0.0));
-    break;
-  }
+    case 3: {  //步行穿小區
+      MobilityHelper ueMobility_4;
+      ueMobility_4.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
+      ueMobility_4.SetPositionAllocator(
+          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(-70.0), "Y",
+          DoubleValue(-16.0), "rho", DoubleValue(0));
+      ueMobility_4.Install(ue_nodes);
+      for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
+        Ptr<ConstantVelocityMobilityModel> cvmm =
+            ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
+        cvmm->SetVelocity(Vector(0.833, 0.0, 0.0));
+        Simulator::Schedule(Seconds(2 + 216), &COEvent, cvmm,
+                            Vector(-0.833, 0.0, 0.0));
+      }
+      break;
+    }
+    case 4: {  //車載穿小區
+      MobilityHelper ueMobility_5;
+      ueMobility_5.SetMobilityModel("ns3::ConstantAccelerationMobilityModel");
+      ueMobility_5.SetPositionAllocator("ns3::UniformDiscPositionAllocator",
+                                        "X", DoubleValue(-90.0), "Y",
+                                        DoubleValue(0), "rho", DoubleValue(0));
+      ueMobility_5.Install(ue_nodes);
+      for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
+        Ptr<ConstantAccelerationMobilityModel> cvmm =
+            ue_nodes.Get(i)->GetObject<ConstantAccelerationMobilityModel>();
+        cvmm->SetVelocityAndAcceleration(Vector(6, 0, 0), Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(30.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(60.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(90.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(120.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(150.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(180.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(210.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(240.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(270.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(300.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
+                            Vector(0, 0, 0));
+        Simulator::Schedule(Seconds(330.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
+                            Vector(0, 0, 0));
+      }
+      break;
+    }
   }
 
   NetDeviceContainer eNb_devs = lteHelper->InstallEnbDevice(eNb_nodes);
@@ -308,25 +338,10 @@ int main(int argc, char *argv[])
 
   internet.Install(ue_nodes);
   ueIpIface = epcHelper->AssignUeIpv4Address(NetDeviceContainer(ue_devs));
-  if (simulationId == 3 || simulationId == 4)
-  {
-    lteHelper->Attach(ue_devs.Get(0), eNb_devs.Get(0));
-    lteHelper->AddX2Interface(eNb_nodes);
-    lteHelper->HandoverRequest(Seconds(96), ue_devs.Get(0), eNb_devs.Get(0),
-                               eNb_devs.Get(1));
-  }
-  else if (simulationId == 5)
-  {
-    lteHelper->Attach(ue_devs.Get(0), eNb_devs.Get(0));
-    lteHelper->AddX2Interface(eNb_nodes);
-    lteHelper->AttachToClosestEnb(ue_devs, eNb_devs);
-  }
-  else
-  {
-    lteHelper->AttachToClosestEnb(ue_devs, eNb_devs);
-  }
-  for (uint32_t i = 0; i < ue_nodes.GetN(); i++)
-  {
+
+  lteHelper->AttachToClosestEnb(ue_devs, eNb_devs);
+
+  for (uint32_t i = 0; i < ue_nodes.GetN(); i++) {
     Ptr<Node> uenode = ue_nodes.Get(i);
     Ptr<Ipv4StaticRouting> ue_static_routing =
         ipv4RoutingHelper.GetStaticRouting(uenode->GetObject<Ipv4>());
@@ -336,13 +351,11 @@ int main(int argc, char *argv[])
   lteHelper->EnableTraces();
 
   std::vector<std::pair<Ptr<Node>, std::string>> clients;
-  for (NodeContainer::Iterator i = ue_nodes.Begin(); i != ue_nodes.End(); ++i)
-  {
+  for (NodeContainer::Iterator i = ue_nodes.Begin(); i != ue_nodes.End(); ++i) {
     std::pair<Ptr<Node>, std::string> client(*i, adaptationAlgo);
     clients.push_back(client);
   }
-  if (app_type.compare("Dash") == 0)
-  {
+  if (app_type.compare("Dash") == 0) {
     uint16_t port = 80;
     TcpStreamServerHelper serverHelper(port);
     ApplicationContainer serverApp =
@@ -357,12 +370,12 @@ int main(int argc, char *argv[])
     clientHelper.SetAttribute("SimulationId", UintegerValue(simulationId));
 
     ApplicationContainer clientApps = clientHelper.Install(clients);
-    clientApps.Get(0)->SetStartTime(Seconds(2.0));
+    clientApps.Get(0)->SetStartTime(Seconds(2));
 
     NS_LOG_INFO("Run Simulation.");
     NS_LOG_INFO("Sim:   " << simulationId
                           << "   Clients:   " << numberOfClients);
-    Simulator::Stop(Seconds(124));
+    Simulator::Stop(Seconds(321));
     Simulator::Run();
     Simulator::Destroy();
     NS_LOG_INFO("Done.");
