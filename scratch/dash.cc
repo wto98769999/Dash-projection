@@ -92,7 +92,8 @@ int main(int argc, char *argv[]) {
                segmentDuration);
   cmd.AddValue("adaptationAlgo",
                "The adaptation algorithm that the client uses for the "
-               "simulation[tobasco | tomato | constbitrate]",
+               "simulation[festive | tobasco | tomatoL | tomato2 | tomato2c | "
+               "constbitrateW/H/T/WH/C...]",
                adaptationAlgo);
   cmd.AddValue("app_type", "source model[Bulk | OnOff | Dash][defalt:Dash]",
                app_type);
@@ -269,13 +270,13 @@ int main(int argc, char *argv[]) {
       MobilityHelper ueMobility_3;
       ueMobility_3.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
       ueMobility_3.SetPositionAllocator(
-          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(80.0), "Y",
+          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(65.0), "Y",
           DoubleValue(-16.0), "rho", DoubleValue(0));
       ueMobility_3.Install(ue_nodes);
       for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
         Ptr<ConstantVelocityMobilityModel> cvmm =
             ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
-        cvmm->SetVelocity(Vector(0, 0.12, 0.0));
+        cvmm->SetVelocity(Vector(0, 0.10, 0.0));
       }
       break;
     }
@@ -283,14 +284,14 @@ int main(int argc, char *argv[]) {
       MobilityHelper ueMobility_4;
       ueMobility_4.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
       ueMobility_4.SetPositionAllocator(
-          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(-70.0), "Y",
-          DoubleValue(-16.0), "rho", DoubleValue(0));
+          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(-85.0), "Y",
+          DoubleValue(-10), "rho", DoubleValue(0));
       ueMobility_4.Install(ue_nodes);
       for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
         Ptr<ConstantVelocityMobilityModel> cvmm =
             ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
         cvmm->SetVelocity(Vector(0.833, 0.0, 0.0));
-        Simulator::Schedule(Seconds(2 + 216), &COEvent, cvmm,
+        Simulator::Schedule(Seconds(204), &COEvent, cvmm,
                             Vector(-0.833, 0.0, 0.0));
       }
       break;

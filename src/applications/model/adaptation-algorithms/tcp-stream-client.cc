@@ -626,11 +626,10 @@ void TcpStreamClient::RequestRepIndex() {
 
   std::cout << "** At :" << std::fixed << std::setprecision(3)
             << answer.decisionTime / 1000000.0 << ", Rep " << m_segmentCounter
-            << ", Rate " << (m_currentRepIndex + 1) * 10 << ", Bw "
-            << std::fixed << std::setprecision(3)
-            << answer.estimateTh / 1000000.0 << ", Delay " << std::fixed
-            << std::setprecision(3) << answer.nextDownloadDelay / 1000000.0
-            << " **" << std::endl;
+            << ", Index " << m_currentRepIndex << ", Bw " << std::fixed
+            << std::setprecision(3) << answer.estimateTh / 1000000.0
+            << ", Delay " << std::fixed << std::setprecision(3)
+            << answer.nextDownloadDelay / 1000000.0 << " **" << std::endl;
 
   m_playbackData.playbackIndex.push_back(answer.nextRepIndex);
   m_bDelay = answer.nextDownloadDelay;
@@ -672,6 +671,7 @@ std::string TcpStreamClient::ChoseInfoPath(int64_t infoindex) {
   switch (infoindex) {
     default:
       infoStatusTemp = "Segment.txt";
+      // infoStatusTemp = "Roller_ERPO_segmentSize.txt";
       break;
   }
   return infoStatusTemp;
