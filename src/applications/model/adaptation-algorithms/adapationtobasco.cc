@@ -28,15 +28,15 @@ TobascoAlgorithm::TobascoAlgorithm(const videoData &videoData,
                                    const bufferData &bufferData,
                                    const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_a1(0.85),
-      m_a2(0.33),
-      m_a3(0.50),
-      m_a4(0.75),
-      m_a5(0.90),
-      m_bMin(m_videoData.segmentDuration * 4),//8s
-      m_bLow(m_videoData.segmentDuration * 8),//16s
-      m_bHigh(m_videoData.segmentDuration * 10),//20s
-      m_bOpt((m_bLow + m_bHigh) / 2),//18s
+      m_a1(0.85),                                 // these param
+      m_a2(0.33),                                 // are set
+      m_a3(0.50),                                 // as the paper
+      m_a4(0.75),                                 // say
+      m_a5(0.90),                                 // do not chage it
+      m_bMin(m_videoData.segmentDuration * 4),    // 4s->8s
+      m_bLow(m_videoData.segmentDuration * 8),    // 8s->16s
+      m_bHigh(m_videoData.segmentDuration * 10),  // 10s->20s
+      m_bOpt((m_bLow + m_bHigh) / 2),             // 9s->18s
       m_lastRepIndex(0),
       m_lastBuffer(0),
       m_runningFastStart(true),

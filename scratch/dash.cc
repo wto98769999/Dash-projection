@@ -67,18 +67,18 @@ int main(int argc, char *argv[]) {
   LogComponentEnable("TcpStreamClientApplication", LOG_LEVEL_INFO);
   LogComponentEnable("TcpStreamServerApplication", LOG_LEVEL_INFO);
 
-  uint64_t segmentDuration = 1000000;  // ms==> 1s/segment
-  uint32_t simulationId = 3;
-  uint32_t numberOfClients = 1;
-  uint32_t numberOfEnbs = 8;                // 7
-  std::string adaptationAlgo = "taboscoc";  //"";
+  uint64_t segmentDuration = 1000000;       //  1s/segment duration
+  uint32_t simulationId = 3;                // simulation scenario id
+  uint32_t numberOfClients = 1;             // client number
+  uint32_t numberOfEnbs = 8;                // eNodeB number
+  std::string adaptationAlgo = "taboscoc";  // DASH algorithm name
   std::string app_type = "Dash";  // Bulk sender | On-Off Sender | Dash
-  double eNbTxPower = 43.0;       // 43
+  double eNbTxPower = 43.0;       // eNodeB Power
   int fading_model = 0;           // 0 for etu, 1 for eva
   int load = 0;                   // 0 for low load, 1 for high load
   int rlc_mode = 3;               // UM = 2; AM = 3
   int tx_mode = 2;
-  int bandwidth = 100;
+  int bandwidth = 100;                // RB number
   std::string data_rate = "100Gbps";  // 100Gbps
 
   CommandLine cmd;
@@ -90,12 +90,14 @@ int main(int argc, char *argv[]) {
   cmd.AddValue("segmentDuration",
                "The duration of a video segment in microseconds",
                segmentDuration);
-  cmd.AddValue("adaptationAlgo",
-               "The adaptation algorithm that the client uses for the "
-               "simulation[festive | tobasco | tomatoL | tomato2 | tomato2c | "
-               "constbitrateW/H/T/WH/C...]",
-               adaptationAlgo);
-  cmd.AddValue("app_type", "source model[Bulk | OnOff | Dash][defalt:Dash]",
+  cmd.AddValue(
+      "adaptationAlgo",
+      "The adaptation algorithm that the client uses for the "
+      "simulation[festive | default:tobasco | tobascoc | tomatoL | tomato2 | "
+      "tomato2c | ... "
+      "constbitrateW/H/T/WH/C...]",
+      adaptationAlgo);
+  cmd.AddValue("app_type", "source model[Bulk | OnOff | Dash][default:Dash]",
                app_type);
   cmd.AddValue("eNbTxPower", "Tx Power of eNB(dBm)[default:43dBm]", eNbTxPower);
   cmd.AddValue("fading_model",
@@ -141,11 +143,12 @@ int main(int argc, char *argv[]) {
   std::ifstream ifTraceFile;
   std::string fading_trace_path;
 
-  if (simulationId == 0) fading_model = 0;
-  if (simulationId == 1) fading_model = 0;
-  if (simulationId == 2) fading_model = 0;
-  if (simulationId == 3) fading_model = 1;
-  if (simulationId == 4) fading_model = 1;
+  // set fading mode
+  if (simulationId == 0) fading_model = 0;  // etu
+  if (simulationId == 1) fading_model = 0;  // etu
+  if (simulationId == 2) fading_model = 0;  // etu
+  if (simulationId == 3) fading_model = 1;  // eva
+  if (simulationId == 4) fading_model = 1;  // eva
 
   if (fading_model == 0)
     fading_trace_path =
@@ -201,7 +204,7 @@ int main(int argc, char *argv[]) {
   MobilityHelper enbMobility;
   Ptr<ListPositionAllocator> positionAlloc_eNB =
       CreateObject<ListPositionAllocator>();
-
+  // set eNodeB position
   positionAlloc_eNB->Add(Vector(0, 0, 0));     // eNB_0
   positionAlloc_eNB->Add(Vector(180, 0, 0));   // eNB_1
   positionAlloc_eNB->Add(Vector(360, 0, 0));   // eNB_2
@@ -215,7 +218,7 @@ int main(int argc, char *argv[]) {
   enbMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
   enbMobility.Install(eNb_nodes);
 
-  // create folder
+  // create log folder
   std::string dir = "mylogs/";
   std::string subdir = dir + adaptationAlgo + "/";
   std::string ssubdir = subdir + ToString(numberOfClients) + "/";
@@ -262,7 +265,7 @@ int main(int argc, char *argv[]) {
           "ns3::RandomWalk2dMobilityModel", "Mode", StringValue("Time"), "Time",
           StringValue("1s"), "Speed",
           StringValue("ns3::ConstantRandomVariable[Constant=0.83333]"),
-          "Bounds", RectangleValue(Rectangle(-50, -40, -50, -30)));
+          "Bounds", RectangleValue(Rectangle(-50, -40, -50, -30)));  // range
       ueMobility_2.Install(ue_nodes.Get(0));
       break;
     }
@@ -276,7 +279,7 @@ int main(int argc, char *argv[]) {
       for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
         Ptr<ConstantVelocityMobilityModel> cvmm =
             ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
-        cvmm->SetVelocity(Vector(0, 0.10, 0.0));
+        cvmm->SetVelocity(Vector(0, 0.10, 0.0));  //(65,-16)->(65,16)
       }
       break;
     }
@@ -292,7 +295,7 @@ int main(int argc, char *argv[]) {
             ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
         cvmm->SetVelocity(Vector(0.833, 0.0, 0.0));
         Simulator::Schedule(Seconds(204), &COEvent, cvmm,
-                            Vector(-0.833, 0.0, 0.0));
+                            Vector(-0.833, 0.0, 0.0));  //(-85,-10)->(85,-10)
       }
       break;
     }
@@ -328,7 +331,7 @@ int main(int argc, char *argv[]) {
         Simulator::Schedule(Seconds(300.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
                             Vector(0, 0, 0));
         Simulator::Schedule(Seconds(330.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
-                            Vector(0, 0, 0));
+                            Vector(0, 0, 0));  //(-90,0)<->(90.0)
       }
       break;
     }
@@ -376,6 +379,7 @@ int main(int argc, char *argv[]) {
     NS_LOG_INFO("Run Simulation.");
     NS_LOG_INFO("Sim:   " << simulationId
                           << "   Clients:   " << numberOfClients);
+    // Simulation Time
     Simulator::Stop(Seconds(321));
     Simulator::Run();
     Simulator::Destroy();

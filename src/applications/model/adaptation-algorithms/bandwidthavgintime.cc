@@ -10,7 +10,7 @@ BandwidthAvgInTimeAlgorithm::BandwidthAvgInTimeAlgorithm(
     const bufferData &bufferData, const throughputData &throughput)
     : BandwidthAlgorithm(videoData, playbackData, bufferData, throughput),
       m_bandwidthAlgoIndex(2),
-      m_deltaTime(m_videoData.segmentDuration * 5),
+      m_deltaTime(m_videoData.segmentDuration * 5),  // 5s
       m_lastBandwidthEstimate(0),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);

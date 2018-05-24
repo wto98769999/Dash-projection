@@ -4,7 +4,7 @@
 #include "tcp-stream-adaptation-algorithm.h"
 
 namespace ns3 {
-
+// designed by tian
 class Tomato2Algorithm : public AdaptationAlgorithm {
  public:
   Tomato2Algorithm(const videoData &videoData, const playbackData &playbackData,

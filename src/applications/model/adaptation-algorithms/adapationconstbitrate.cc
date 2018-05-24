@@ -10,8 +10,8 @@ constbitrateAlgorithm::constbitrateAlgorithm(const videoData &videoData,
                                              const bufferData &bufferData,
                                              const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_targetBuffer(m_videoData.segmentDuration * 10),
-      m_deltaBuffer(m_videoData.segmentDuration * 2),
+      m_targetBuffer(m_videoData.segmentDuration * 10),  // 10s
+      m_deltaBuffer(m_videoData.segmentDuration * 2),    // 2s
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1),
       m_constRepIndex(4) {
   NS_LOG_INFO(this);
@@ -35,10 +35,11 @@ algorithmReply constbitrateAlgorithm::GetNextRep(const int64_t segmentCounter,
     int64_t upperBound = m_targetBuffer + m_deltaBuffer;
     int64_t bufferNow = m_bufferData.bufferLevelNew.back() -
                         (timeNow - m_throughput.transmissionEnd.back());
+    // buffer control
     int64_t randBuf =
         lowerBound + (int64_t)(std::rand() % (upperBound - (lowerBound) + 1));
     if (bufferNow > randBuf) {
-      // answer.nextDownloadDelay = bufferNow - randBuf;
+      answer.nextDownloadDelay = bufferNow - randBuf;
       answer.nextDownloadDelay = 0;
       answer.delayDecisionCase = 1;
     } else {

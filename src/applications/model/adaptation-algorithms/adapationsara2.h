@@ -4,7 +4,7 @@
 #include "tcp-stream-adaptation-algorithm.h"
 
 namespace ns3 {
-
+// do not use this algo
 class Sara2Algorithm : public AdaptationAlgorithm {
  public:
   Sara2Algorithm(const videoData &videoData, const playbackData &playbackData,

@@ -41,10 +41,11 @@ class AdaptationAlgorithm : public Object {
                       const bufferData &bufferData,
                       const throughputData &throughput);
 
-  virtual algorithmReply GetNextRep(const int64_t segmentCounter,
-                                    const int64_t clientId,
-                                    int64_t extraParameter,
-                                    int64_t extraParameter2) = 0;
+  virtual algorithmReply GetNextRep(
+      const int64_t segmentCounter, const int64_t clientId,
+      int64_t extraParameter,   // usually this is bandwidth
+      int64_t extraParameter2)  // usually this is not of use
+      = 0;
 
  protected:
   const videoData &m_videoData;

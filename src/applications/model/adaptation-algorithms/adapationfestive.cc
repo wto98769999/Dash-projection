@@ -28,8 +28,8 @@ FestiveAlgorithm::FestiveAlgorithm(const videoData &videoData,
                                    const bufferData &bufferData,
                                    const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_targetBuffer(m_videoData.segmentDuration * 10),
-      m_delta(m_videoData.segmentDuration * 2),
+      m_targetBuffer(m_videoData.segmentDuration * 10),  // 10s
+      m_delta(m_videoData.segmentDuration * 2),          // 2s
       m_alpha(12.0),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1),
       m_thrptThrsh(0.90) {
@@ -57,6 +57,7 @@ algorithmReply FestiveAlgorithm::GetNextRep(const int64_t segmentCounter,
     answer.estimateTh = extraParameter;
     return answer;
   }
+  // buffer control
   int64_t bufferNow = m_bufferData.bufferLevelNew.back() -
                       (timeNow - m_throughput.transmissionEnd.back());
 

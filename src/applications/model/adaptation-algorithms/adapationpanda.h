@@ -22,7 +22,7 @@
 #include "tcp-stream-adaptation-algorithm.h"
 
 namespace ns3 {
-
+// do not use this algo
 class PandaAlgorithm : public AdaptationAlgorithm {
  public:
   PandaAlgorithm(const videoData &videoData, const playbackData &playbackData,

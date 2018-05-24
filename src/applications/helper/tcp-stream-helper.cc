@@ -72,7 +72,6 @@ TcpStreamClientHelper::TcpStreamClientHelper(
   SetAttribute("RemoteAddress", AddressValue(address));
   SetAttribute("RemotePort", UintegerValue(port));
   m_crossLayerInfo = crossLayerInfo;
-  // std::cout<<address<<"\t"<<port<<"\t"<<crossLayerInfo<<std::endl;
 }
 
 TcpStreamClientHelper::TcpStreamClientHelper(Ipv4Address address,

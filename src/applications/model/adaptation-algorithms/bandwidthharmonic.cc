@@ -10,7 +10,7 @@ BandwidthHarmonicAlgorithm::BandwidthHarmonicAlgorithm(
     const bufferData &bufferData, const throughputData &throughput)
     : BandwidthAlgorithm(videoData, playbackData, bufferData, throughput),
       m_bandwidthAlgoIndex(4),
-      m_windowSize(5),
+      m_windowSize(5),  // 5 segment for smoothing
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,

@@ -11,12 +11,13 @@ Tomato2Algorithm::Tomato2Algorithm(const videoData &videoData,
                                    const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
       m_lastRepIndex(0),
-      m_targetBuffer(m_videoData.segmentDuration * 6),
-      m_deltaBuffer(m_videoData.segmentDuration * 1),
-      m_bufferMin(m_videoData.segmentDuration * 3),
-      m_expBuffer(0),
-      m_multipleTinyDrop(0),
-      m_beta(0.0),
+      m_targetBuffer(m_videoData.segmentDuration * 6),  // 6s
+      m_deltaBuffer(m_videoData.segmentDuration * 1),   // 1s
+      m_bufferMin(m_videoData.segmentDuration * 3),     // 3ssss
+      m_expBuffer(0),  // buffer expection ,cal at the beginning of download the
+                       // current seg
+      m_multipleTinyDrop(0),  // cal tiny buffer drop
+      m_beta(0.0),            // adjust buffer upper bound
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,

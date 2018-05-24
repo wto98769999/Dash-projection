@@ -15,7 +15,7 @@
 #include "tcp-stream-interface.h"
 
 namespace ns3 {
-
+// todo
 class BandwidthAlgorithm : public Object {
  public:
   BandwidthAlgorithm(const videoData &videoData,
@@ -23,10 +23,11 @@ class BandwidthAlgorithm : public Object {
                      const bufferData &bufferData,
                      const throughputData &throughput);
 
-  virtual bandwidthAlgoReply BandwidthAlgo(const int64_t segmentCounter,
-                                           const int64_t clientId,
-                                           int64_t extraParameter,
-                                           int64_t extraParameter2) = 0;
+  virtual bandwidthAlgoReply BandwidthAlgo(
+      const int64_t segmentCounter, const int64_t clientId,
+      int64_t extraParameter,   // for crosslayer
+      int64_t extraParameter2)  // not of use
+      = 0;
 
  protected:
   const videoData &m_videoData;
