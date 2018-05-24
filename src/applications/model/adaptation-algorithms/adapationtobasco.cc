@@ -33,10 +33,10 @@ TobascoAlgorithm::TobascoAlgorithm(const videoData &videoData,
       m_a3(0.50),
       m_a4(0.75),
       m_a5(0.90),
-      m_bMin(m_videoData.segmentDuration * 4),
-      m_bLow(m_videoData.segmentDuration * 8),
-      m_bHigh(m_videoData.segmentDuration * 10),
-      m_bOpt((m_bLow + m_bHigh) / 2),
+      m_bMin(m_videoData.segmentDuration * 4),//8s
+      m_bLow(m_videoData.segmentDuration * 8),//16s
+      m_bHigh(m_videoData.segmentDuration * 10),//20s
+      m_bOpt((m_bLow + m_bHigh) / 2),//18s
       m_lastRepIndex(0),
       m_lastBuffer(0),
       m_runningFastStart(true),

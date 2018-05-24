@@ -68,15 +68,15 @@ int main(int argc, char *argv[]) {
   LogComponentEnable("TcpStreamServerApplication", LOG_LEVEL_INFO);
 
   uint64_t segmentDuration = 1000000;  // ms==> 1s/segment
-  uint32_t simulationId = 4;
+  uint32_t simulationId = 3;
   uint32_t numberOfClients = 1;
-  uint32_t numberOfEnbs = 8;              // 7
-  std::string adaptationAlgo = "tomato";  //"";
-  std::string app_type = "Dash";          // Bulk sender | On-Off Sender | Dash
-  double eNbTxPower = 43.0;               // 43
-  int fading_model = 0;                   // 0 for etu, 1 for eva
-  int load = 0;                           // 0 for low load, 1 for high load
-  int rlc_mode = 3;                       // UM = 2; AM = 3
+  uint32_t numberOfEnbs = 8;                // 7
+  std::string adaptationAlgo = "taboscoc";  //"";
+  std::string app_type = "Dash";  // Bulk sender | On-Off Sender | Dash
+  double eNbTxPower = 43.0;       // 43
+  int fading_model = 0;           // 0 for etu, 1 for eva
+  int load = 0;                   // 0 for low load, 1 for high load
+  int rlc_mode = 3;               // UM = 2; AM = 3
   int tx_mode = 2;
   int bandwidth = 100;
   std::string data_rate = "100Gbps";  // 100Gbps

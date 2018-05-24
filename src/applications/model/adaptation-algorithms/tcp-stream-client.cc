@@ -232,6 +232,15 @@ void TcpStreamClient::Initialise(
                                           m_bufferData, m_throughput);
     algo = new TobascoAlgorithm(m_videoData, m_playbackData, m_bufferData,
                                 m_throughput);
+  } else if (algorithm == "tobascoc") {
+    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
+                                               m_bufferData, m_throughput);
+    bandwidthAlgo = new BandwidthCrosslayerAlgorithm(
+        m_videoData, m_playbackData, m_bufferData, m_throughput);
+    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
+                                          m_bufferData, m_throughput);
+    algo = new TobascoAlgorithm(m_videoData, m_playbackData, m_bufferData,
+                                m_throughput);
   } else if (algorithm == "tomatoL") {
     userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
                                                m_bufferData, m_throughput);
