@@ -50,32 +50,8 @@ struct algorithmReply {
                               //!< segment shall be requested from server, only
                               //!< for logging purposes
   double estimateTh;
-  double QoE3D;
 };
 
-/*! \class bufferAlgoReply tcp-stream-interface.h "model/tcp-stream-interface.h"
- *  \ingroup tcpStream
- *  \brief This struct contains the reply an bufferDrop algorithm returns to the
- * client
- */
-struct bufferAlgoReply  // new for buffer flush algo, added in 12-24
-{
-  int64_t bufferAlgoIndex;  //!< bufferClean = 1 bufferAdaptive = 2 default = 0
-  int64_t bufferCleanNumber;   //!< number of buffered segment to be cleaned (in
-                               //!< Reverse order), only makes sense when
-                               //!< bufferclean is choosen ( bufferClean = 1)
-  int64_t bufferTargetNumber;  //!< time in microsends for target buffer,
-                               //!< default value is set with each bufferAlgo
-                               //!< (in private data);
-  int64_t decisionTime;        //!< time in microsends when the buffer algorithm
-                               //!< works, only for logging purposes
-};
-struct crosslayerInfo {
-  int64_t decisionTime;
-  int64_t decisionCase;
-  int64_t estimateTh;
-  int64_t extraParameter;
-};
 struct bandwidthAlgoReply  // added in 12-27
 {
   int64_t bandwidthAlgoIndex;  //!< bandwidthAvg = 1 bandwidthCrosslayer = 2
@@ -137,32 +113,6 @@ struct bufferData {
       bufferLevelNew;  //!< buffer level in microseconds after adding segment
                        //!< duration (in microseconds) of just downloaded
                        //!< segment
-};
-
-struct bufferEnhance1  // new for layer-based video coding, added in 12-24
-{
-  std::vector<int64_t> timeNowE1;     //!< current simulation time
-  std::vector<int64_t> segmentIndex;  //!< segmentIndex of segment in
-                                      //!< buffer(Enhancement layer1) -1 = fail
-  std::vector<int64_t>
-      bufferLevelOldE1;  //!< buffer level in microseconds before adding segment
-                         //!< duration (in microseconds) of just downloaded
-                         //!< segment
-};
-
-struct bufferEnhance2  // new for layer-based video coding, added in 12- 24
-{
-  std::vector<int64_t> timeNowE2;     //!< current simulation time
-  std::vector<int64_t> segmentIndex;  //!< segmentIndex of segment in
-                                      //!< buffer(Enhancement layer2) -1 = fail
-  std::vector<int64_t>
-      bufferLevelOldE2;  //!< buffer level in microseconds before adding segment
-                         //!< duration (in microseconds) of just downloaded
-                         //!< segment
-  std::vector<int64_t>
-      bufferLevelNewE2;  //!< buffer level in microseconds after adding segment
-                         //!< duration (in microseconds) of just downloaded
-                         //!< segment
 };
 
 /*! \class videoData tcp-stream-interface.h "model/tcp-stream-interface.h"

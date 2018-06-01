@@ -35,16 +35,13 @@
 #include "bandwidthharmonic.h"
 #include "bandwidthlongavg.h"
 #include "bandwidthwharmonic.h"
-#include "bufferclean.h"
 #include "ns3/application.h"
 #include "ns3/event-id.h"
 #include "ns3/ipv4-address.h"
-#include "ns3/phy-rx-stats-calculator.h"
 #include "ns3/ptr.h"
 #include "ns3/traced-callback.h"
 #include "tcp-stream-adaptation-algorithm.h"
 #include "tcp-stream-bandwidth-algorithm.h"
-#include "tcp-stream-buffer-algorithm.h"
 #include "tcp-stream-interface.h"
 #include "tcp-stream-userinfo-algorithm.h"
 #include "userprediction.h"
@@ -79,8 +76,7 @@ class TcpStreamClient : public Application {
    * \param algorithm the name of the algorithm to use for instantiating an
    * adaptation algorithm object.
    */
-  void Initialise(std::string algorithm, uint16_t clientId,
-                  const Ptr<PhyRxStatsCalculator> ccrossLayerInfo);
+  void Initialise(std::string algorithm, uint16_t clientId);
 
   /**
    * \brief Set the remote address and port
@@ -135,10 +131,9 @@ class TcpStreamClient : public Application {
     init
   };
   AdaptationAlgorithm *algo;
-  BufferAlgorithm *bufferAlgo;        // add in 12-27
   BandwidthAlgorithm *bandwidthAlgo;  // add in 12-27
   UserinfoAlgorithm *userinfoAlgo;    // add in 12-28
-  Ptr<PhyRxStatsCalculator> m_crossLayerInfo;
+
 
   virtual void StartApplication(void);
   virtual void StopApplication(void);
@@ -353,7 +348,6 @@ class TcpStreamClient : public Application {
 
   std::string ChoseInfoPath(int64_t infoindex);
   void GetInfo();
-  algorithmReply UptoQoE(algorithmReply answer);
 
   uint32_t m_dataSize;  //!< packet payload size
   uint8_t *m_data;      //!< packet payload data
@@ -424,30 +418,7 @@ class TcpStreamClient : public Application {
   videoData m_videoData;  //!< Information about segment sizes, average bitrates
                           //!< of representation levels and segment duration in
                           //!< microseconds
-  Ptr<PhyRxStatsCalculator> cm_crossLayerInfo;  // add
-  /*
-const std::vector<double> RepLevelToQoE3D = {
-   4.8, //  Rep Level 0
-   5,   //  Rep Level 1
-   5.5, //  Rep Level 2
-   7.2, //  Rep Level 3
-   7.8, //  Rep Level 4
-   6.2  //  Rep Level 5
-};       // according to chen
-*/
-  const std::vector<double> RepLevelToQoE3D = {
-      3.2,  //  Rep Level 10M
-      4.8,  //  Rep Level 20M
-      5.2,  //  Rep Level 30M
-      5.4,  //  Rep Level 40M
-      7.3,  //  Rep Level 50M
-      7.6,  //  Rep Level 60M
-      // 7.8, //  Rep Level 70M
-      8.0,  //  Rep Level 70M update on 1.30
-      8.2,  //  Rep Level 80M
-      8.5,  //  Rep Level 90M
-      8.7   //  Rep Level 100M
-  };        // according to chen
+
 };
 
 }  // namespace ns3

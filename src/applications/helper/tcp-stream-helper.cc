@@ -110,8 +110,7 @@ Ptr<Application> TcpStreamClientHelper::InstallPriv(Ptr<Node> node,
   Ptr<Application> app = m_factory.Create<TcpStreamClient>();
   app->GetObject<TcpStreamClient>()->SetAttribute("ClientId",
                                                   UintegerValue(clientId));
-  app->GetObject<TcpStreamClient>()->Initialise(algo, clientId,
-                                                m_crossLayerInfo);
+  app->GetObject<TcpStreamClient>()->Initialise(algo, clientId);
 
   node->AddApplication(app);
 

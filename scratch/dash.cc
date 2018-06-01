@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
   uint32_t simulationId = 3;                // simulation scenario id
   uint32_t numberOfClients = 1;             // client number
   uint32_t numberOfEnbs = 8;                // eNodeB number
-  std::string adaptationAlgo = "taboscoc";  // DASH algorithm name
+  std::string adaptationAlgo = "tabosco";  // DASH algorithm name
   std::string app_type = "Dash";  // Bulk sender | On-Off Sender | Dash
   double eNbTxPower = 43.0;       // eNodeB Power
   int fading_model = 0;           // 0 for etu, 1 for eva
@@ -93,8 +93,7 @@ int main(int argc, char *argv[]) {
   cmd.AddValue(
       "adaptationAlgo",
       "The adaptation algorithm that the client uses for the "
-      "simulation[festive | default:tobasco | tobascoc | tomatoL | tomato2 | "
-      "tomato2c | ... "
+      "simulation[festive | tobasco | tomato | tomato2 ... "
       "constbitrateW/H/T/WH/C...]",
       adaptationAlgo);
   cmd.AddValue("app_type", "source model[Bulk | OnOff | Dash][default:Dash]",
