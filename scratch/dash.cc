@@ -67,18 +67,18 @@ int main(int argc, char *argv[]) {
   LogComponentEnable("TcpStreamClientApplication", LOG_LEVEL_INFO);
   LogComponentEnable("TcpStreamServerApplication", LOG_LEVEL_INFO);
 
-  uint64_t segmentDuration = 1000000;       //  1s/segment duration
-  uint32_t simulationId = 3;                // simulation scenario id
-  uint32_t numberOfClients = 1;             // client number
-  uint32_t numberOfEnbs = 8;                // eNodeB number
-  std::string adaptationAlgo = "tabosco";  // DASH algorithm name
-  std::string app_type = "Dash";  // Bulk sender | On-Off Sender | Dash
-  double eNbTxPower = 43.0;       // eNodeB Power
-  int fading_model = 0;           // 0 for etu, 1 for eva
-  int load = 0;                   // 0 for low load, 1 for high load
-  int rlc_mode = 3;               // UM = 2; AM = 3
+  uint64_t segmentDuration = 1000000;  // ms==> 1s/segment
+  uint32_t simulationId = 4;
+  uint32_t numberOfClients = 1;
+  uint32_t numberOfEnbs = 8;               // 7
+  std::string adaptationAlgo = "tobasco";  //
+  std::string app_type = "Dash";           // Bulk sender | On-Off Sender | Dash
+  double eNbTxPower = 43.0;                // 43
+  int fading_model = 0;                    // 0 for etu, 1 for eva
+  int load = 0;                            // 0 for low load, 1 for high load
+  int rlc_mode = 3;                        // UM = 2; AM = 3
   int tx_mode = 2;
-  int bandwidth = 100;                // RB number
+  int bandwidth = 75;
   std::string data_rate = "100Gbps";  // 100Gbps
 
   CommandLine cmd;
@@ -90,13 +90,12 @@ int main(int argc, char *argv[]) {
   cmd.AddValue("segmentDuration",
                "The duration of a video segment in microseconds",
                segmentDuration);
-  cmd.AddValue(
-      "adaptationAlgo",
-      "The adaptation algorithm that the client uses for the "
-      "simulation[festive | tobasco | tomato | tomato2 ... "
-      "constbitrateW/H/T/WH/C...]",
-      adaptationAlgo);
-  cmd.AddValue("app_type", "source model[Bulk | OnOff | Dash][default:Dash]",
+  cmd.AddValue("adaptationAlgo",
+               "The adaptation algorithm that the client uses for the "
+               "simulation[festive | tobasco | sara | tomato | "
+               "constbitrateW/H/T/WH/C...]",
+               adaptationAlgo);
+  cmd.AddValue("app_type", "source model[Bulk | OnOff | Dash][defalt:Dash]",
                app_type);
   cmd.AddValue("eNbTxPower", "Tx Power of eNB(dBm)[default:43dBm]", eNbTxPower);
   cmd.AddValue("fading_model",
@@ -121,7 +120,7 @@ int main(int argc, char *argv[]) {
   Config::SetDefault("ns3::LteEnbRrc::DefaultTransmissionMode",
                      UintegerValue(tx_mode));  // MIMO
   Config::SetDefault("ns3::LteEnbRrc::EpsBearerToRlcMapping",
-                     EnumValue(rlc_mode));  // RLC_UM_Always=2; RLC_AM_Always=3
+                     EnumValue(rlc_mode));
   Config::SetDefault("ns3::LteEnbPhy::TxPower", DoubleValue(eNbTxPower));
   GlobalValue::Bind("ChecksumEnabled", BooleanValue(true));
   Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue(1446));
@@ -142,12 +141,10 @@ int main(int argc, char *argv[]) {
   std::ifstream ifTraceFile;
   std::string fading_trace_path;
 
-  // set fading mode
-  if (simulationId == 0) fading_model = 0;  // etu
-  if (simulationId == 1) fading_model = 0;  // etu
-  if (simulationId == 2) fading_model = 0;  // etu
-  if (simulationId == 3) fading_model = 1;  // eva
-  if (simulationId == 4) fading_model = 1;  // eva
+  if (simulationId == 1) fading_model = 0;
+  if (simulationId == 2) fading_model = 0;
+  if (simulationId == 3) fading_model = 1;
+  if (simulationId == 4) fading_model = 1;
 
   if (fading_model == 0)
     fading_trace_path =
@@ -187,13 +184,13 @@ int main(int argc, char *argv[]) {
   p2ph.SetChannelAttribute("Delay", TimeValue(Seconds(0.001)));
   NetDeviceContainer internetDevices = p2ph.Install(pgw, remote_host);
   Ipv4AddressHelper ipv4h;
-  ipv4h.SetBase("1.0.0.0", "256.0.0.0");
+  ipv4h.SetBase("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign(internetDevices);
   Ipv4StaticRoutingHelper ipv4RoutingHelper;
   Ptr<Ipv4StaticRouting> remote_host_static_routing =
       ipv4RoutingHelper.GetStaticRouting(remote_host->GetObject<Ipv4>());
   remote_host_static_routing->AddNetworkRouteTo(Ipv4Address("7.0.0.0"),
-                                                Ipv4Mask("256.0.0.0"), 1);
+                                                Ipv4Mask("255.0.0.0"), 1);
 
   NodeContainer eNb_nodes;
   NodeContainer ue_nodes;
@@ -203,7 +200,7 @@ int main(int argc, char *argv[]) {
   MobilityHelper enbMobility;
   Ptr<ListPositionAllocator> positionAlloc_eNB =
       CreateObject<ListPositionAllocator>();
-  // set eNodeB position
+
   positionAlloc_eNB->Add(Vector(0, 0, 0));     // eNB_0
   positionAlloc_eNB->Add(Vector(180, 0, 0));   // eNB_1
   positionAlloc_eNB->Add(Vector(360, 0, 0));   // eNB_2
@@ -217,7 +214,7 @@ int main(int argc, char *argv[]) {
   enbMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
   enbMobility.Install(eNb_nodes);
 
-  // create log folder
+  // create folder
   std::string dir = "mylogs/";
   std::string subdir = dir + adaptationAlgo + "/";
   std::string ssubdir = subdir + ToString(numberOfClients) + "/";
@@ -236,16 +233,13 @@ int main(int argc, char *argv[]) {
   NS_ASSERT_MSG(clientPosLog.is_open(), "Couldn't open clientPosLog file");
 
   switch (simulationId) {
-    case 0: {  //固定位置
+    case 1: {  //固定位置
       Ptr<ListPositionAllocator> positionAlloc =
           CreateObject<ListPositionAllocator>();
       Ptr<RandomDiscPositionAllocator> randPosAlloc =
           CreateObject<RandomDiscPositionAllocator>();
       for (uint i = 0; i < numberOfClients; i++) {
-        randPosAlloc->SetX(0);
-        randPosAlloc->SetY(0);
-        // Vector pos = Vector(randPosAlloc->GetNext());
-        Vector pos = Vector(54, 54, 0);
+        Vector pos = Vector(30, 25, 0);
         positionAlloc->Add(pos);
 
         clientPosLog << ToString(pos.x) << ", " << ToString(pos.y) << ", "
@@ -258,27 +252,15 @@ int main(int argc, char *argv[]) {
       ueMobility_1.Install(ue_nodes);
       break;
     }
-    case 1: {  //隨機走動
+    case 2: {  //隨機走動
       MobilityHelper ueMobility_2;
       ueMobility_2.SetMobilityModel(
           "ns3::RandomWalk2dMobilityModel", "Mode", StringValue("Time"), "Time",
           StringValue("1s"), "Speed",
           StringValue("ns3::ConstantRandomVariable[Constant=0.83333]"),
-          "Bounds", RectangleValue(Rectangle(-50, -40, -50, -30)));  // range
-      ueMobility_2.Install(ue_nodes.Get(0));
-      break;
-    }
-    case 2: {  //在小區的邊緣試探
-      MobilityHelper ueMobility_3;
-      ueMobility_3.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
-      ueMobility_3.SetPositionAllocator(
-          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(65.0), "Y",
-          DoubleValue(-16.0), "rho", DoubleValue(0));
-      ueMobility_3.Install(ue_nodes);
-      for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
-        Ptr<ConstantVelocityMobilityModel> cvmm =
-            ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
-        cvmm->SetVelocity(Vector(0, 0.10, 0.0));  //(65,-16)->(65,16)
+          "Bounds", RectangleValue(Rectangle(40, 20, 40, 20)));
+      for (uint i = 0; i < numberOfClients; i++) {
+        ueMobility_2.Install(ue_nodes.Get(i));
       }
       break;
     }
@@ -286,15 +268,15 @@ int main(int argc, char *argv[]) {
       MobilityHelper ueMobility_4;
       ueMobility_4.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
       ueMobility_4.SetPositionAllocator(
-          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(-85.0), "Y",
+          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(-90.0), "Y",
           DoubleValue(-10), "rho", DoubleValue(0));
       ueMobility_4.Install(ue_nodes);
       for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
         Ptr<ConstantVelocityMobilityModel> cvmm =
             ue_nodes.Get(i)->GetObject<ConstantVelocityMobilityModel>();
         cvmm->SetVelocity(Vector(0.833, 0.0, 0.0));
-        Simulator::Schedule(Seconds(204), &COEvent, cvmm,
-                            Vector(-0.833, 0.0, 0.0));  //(-85,-10)->(85,-10)
+        Simulator::Schedule(Seconds(180), &COEvent, cvmm,
+                            Vector(-0.833, 0.0, 0.0));
       }
       break;
     }
@@ -330,7 +312,7 @@ int main(int argc, char *argv[]) {
         Simulator::Schedule(Seconds(300.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
                             Vector(0, 0, 0));
         Simulator::Schedule(Seconds(330.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
-                            Vector(0, 0, 0));  //(-90,0)<->(90.0)
+                            Vector(0, 0, 0));
       }
       break;
     }
@@ -359,13 +341,16 @@ int main(int argc, char *argv[]) {
     clients.push_back(client);
   }
   if (app_type.compare("Dash") == 0) {
+    const Ptr<PhyRxStatsCalculator> lte_phy_rx_stats =
+        lteHelper->GetPhyRxStats();
     uint16_t port = 80;
     TcpStreamServerHelper serverHelper(port);
     ApplicationContainer serverApp =
         serverHelper.Install(remote_host_container.Get(0));
     serverApp.Start(Seconds(1.0));
 
-    TcpStreamClientHelper clientHelper(internetIpIfaces.GetAddress(1), port);
+    TcpStreamClientHelper clientHelper(internetIpIfaces.GetAddress(1), port,
+                                       lte_phy_rx_stats);
     clientHelper.SetAttribute("SegmentDuration",
                               UintegerValue(segmentDuration));
     clientHelper.SetAttribute("NumberOfClients",
@@ -374,12 +359,24 @@ int main(int argc, char *argv[]) {
 
     ApplicationContainer clientApps = clientHelper.Install(clients);
     clientApps.Get(0)->SetStartTime(Seconds(2));
+    clientApps.Get(0)->SetStopTime(Seconds(302));
+    /*
+        clientApps.Get(1)->SetStartTime(Seconds(2));
+        clientApps.Get(1)->SetStopTime(Seconds(62));
 
+        clientApps.Get(2)->SetStartTime(Seconds(2));
+        clientApps.Get(2)->SetStopTime(Seconds(102));
+
+        clientApps.Get(3)->SetStartTime(Seconds(122));
+        clientApps.Get(3)->SetStopTime(Seconds(162));
+
+        clientApps.Get(4)->SetStartTime(Seconds(142));
+        clientApps.Get(5)->SetStartTime(Seconds(302));
+    */
     NS_LOG_INFO("Run Simulation.");
     NS_LOG_INFO("Sim:   " << simulationId
                           << "   Clients:   " << numberOfClients);
-    // Simulation Time
-    Simulator::Stop(Seconds(321));
+    Simulator::Stop(Seconds(301));
     Simulator::Run();
     Simulator::Destroy();
     NS_LOG_INFO("Done.");

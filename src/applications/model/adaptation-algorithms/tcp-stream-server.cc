@@ -17,7 +17,6 @@
  */
 
 #include "tcp-stream-server.h"
-#include <ns3/core-module.h>
 #include "ns3/address-utils.h"
 #include "ns3/global-value.h"
 #include "ns3/inet-socket-address.h"
@@ -35,10 +34,12 @@
 #include "ns3/trace-source-accessor.h"
 #include "ns3/uinteger.h"
 #include "tcp-stream-client.h"
+#include <ns3/core-module.h>
 
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("TcpStreamServerApplication");
+
 NS_OBJECT_ENSURE_REGISTERED(TcpStreamServer);
 
 TypeId TcpStreamServer::GetTypeId(void) {
@@ -198,5 +199,4 @@ int64_t TcpStreamServer::GetCommand(Ptr<Packet> packet) {
   convert >> packetSizeToReturn;
   return packetSizeToReturn;
 }
-
-}  // Namespace ns3
+} // Namespace ns3

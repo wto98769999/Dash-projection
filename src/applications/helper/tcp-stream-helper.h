@@ -118,9 +118,8 @@ class TcpStreamClientHelper {
    * Create TcpStreamClientHelper which will make life easier for people trying
    * to set up simulations with echos.
    *
-   * \param ip The IP address of the remote tcp stream server
+   * \param ip The IPv4 address of the remote tcp stream server
    * \param port The port number of the remote tcp stream server
-   * \param crosssInfo: The type should be Ptr<PhyRxStatsCalculator>
    */
   TcpStreamClientHelper(Address ip, uint16_t port,
                         const Ptr<PhyRxStatsCalculator> crossLayerInfo);
@@ -160,7 +159,7 @@ class TcpStreamClientHelper {
    * \returns the applications created, one application per input node.
    */
   ApplicationContainer Install(
-      std::vector<std::pair<Ptr<Node>, std::string> > clients) const;
+      std::vector<std::pair<Ptr<Node>, std::string>> clients) const;
 
  private:
   /**

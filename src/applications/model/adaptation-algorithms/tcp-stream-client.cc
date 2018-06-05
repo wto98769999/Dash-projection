@@ -46,19 +46,19 @@
 #include "ns3/uinteger.h"
 #include "tcp-stream-server.h"
 
-namespace ns3 {
+#ifndef CROSSLAYER
+#define CROSSLAYER 0
+#endif  // !1
 
+namespace ns3 {
 std::vector<std::pair<int64_t, int64_t>>
     pause;  //<Pause BeginTime,Pause End Time>
 bool firstOfBwEstimate = true;
 bool secondOfBwEstimate = true;
 double bandwidthEstimate = 0.0;
-double alpha = 0.1;
-double beta = 0.2;
+double alpha = 0.2;
 int64_t traceBegin = 0.0;
 static double lastEndTime = 0.0;
-int64_t LowestIndex = -1;
-
 template <typename T>
 std::string ToString(T val) {
   std::stringstream stream;
@@ -230,133 +230,49 @@ void TcpStreamClient::Initialise(
                                                m_bufferData, m_throughput);
     bandwidthAlgo = new BandwidthAvgInTimeAlgorithm(m_videoData, m_playbackData,
                                                     m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
     algo = new TobascoAlgorithm(m_videoData, m_playbackData, m_bufferData,
                                 m_throughput);
-  } else if (algorithm == "tobascoc") {
-    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
-                                               m_bufferData, m_throughput);
-    // tobasco and bandwidthEstimation from crosslyer info
-    bandwidthAlgo = new BandwidthCrosslayerAlgorithm(
-        m_videoData, m_playbackData, m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
-    algo = new TobascoAlgorithm(m_videoData, m_playbackData, m_bufferData,
-                                m_throughput);
-  } else if (algorithm == "tomatoL") {
-    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
-                                               m_bufferData, m_throughput);
-    // long average
-    bandwidthAlgo = new BandwidthLongAvgAlgorithm(m_videoData, m_playbackData,
-                                                  m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
-    // old version of VLC, with a little modification
-    algo = new TomatoAlgorithm(m_videoData, m_playbackData, m_bufferData,
-                               m_throughput);
-  } else if (algorithm == "tomato2") {
+  } else if (algorithm == "tobascoL") {
     userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
                                                m_bufferData, m_throughput);
     // harmonic
-    bandwidthAlgo = new BandwidthHarmonicAlgorithm(m_videoData, m_playbackData,
-                                                   m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
+    bandwidthAlgo = new BandwidthLongAvgAlgorithm(m_videoData, m_playbackData,
+                                                  m_bufferData, m_throughput);
     // designed by tian
-    algo = new Tomato2Algorithm(m_videoData, m_playbackData, m_bufferData,
+    algo = new TobascoAlgorithm(m_videoData, m_playbackData, m_bufferData,
                                 m_throughput);
-  } else if (algorithm == "tomato2c") {
+  } else if (algorithm == "tomato") {
     userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
                                                m_bufferData, m_throughput);
-    // actully it does not work well
-    bandwidthAlgo = new BandwidthCrosslayerAlgorithm(
-        m_videoData, m_playbackData, m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
-    algo = new Tomato2Algorithm(m_videoData, m_playbackData, m_bufferData,
-                                m_throughput);
+    // harmonic
+    bandwidthAlgo = new BandwidthWHarmonicAlgorithm(m_videoData, m_playbackData,
+                                                    m_bufferData, m_throughput);
+    // designed by tian
+    algo = new TomatoAlgorithm(m_videoData, m_playbackData, m_bufferData,
+                               m_throughput);
   } else if (algorithm == "festive") {
     userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
                                                m_bufferData, m_throughput);
     // harmonic
     bandwidthAlgo = new BandwidthHarmonicAlgorithm(m_videoData, m_playbackData,
                                                    m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
     // festive from paper
     algo = new FestiveAlgorithm(m_videoData, m_playbackData, m_bufferData,
                                 m_throughput);
-  } else if (algorithm == "panda") {
-    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
-                                               m_bufferData, m_throughput);
-    // actually panda do not use this bandwidth estimation
-    bandwidthAlgo = new BandwidthHarmonicAlgorithm(m_videoData, m_playbackData,
-                                                   m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
-    // it sucks
-    algo = new PandaAlgorithm(m_videoData, m_playbackData, m_bufferData,
-                              m_throughput);
   } else if (algorithm == "sara") {
     userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
                                                m_bufferData, m_throughput);
     // weighted harmonic
     bandwidthAlgo = new BandwidthWHarmonicAlgorithm(m_videoData, m_playbackData,
                                                     m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
     // sara from paper
     algo = new SaraAlgorithm(m_videoData, m_playbackData, m_bufferData,
                              m_throughput);
-  } else if (algorithm == "sara2") {
-    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
-                                               m_bufferData, m_throughput);
-    // weighted harmonic
-    bandwidthAlgo = new BandwidthWHarmonicAlgorithm(m_videoData, m_playbackData,
-                                                    m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
-    // todo
-    algo = new Sara2Algorithm(m_videoData, m_playbackData, m_bufferData,
-                              m_throughput);
-  }
-  // the  following: use different bandwidthEstimation algo, for test
-  // without any dash algo
-  else if (algorithm == "constbitrateH") {
-    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
-                                               m_bufferData, m_throughput);
-    bandwidthAlgo = new BandwidthHarmonicAlgorithm(m_videoData, m_playbackData,
-                                                   m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
-    algo = new constbitrateAlgorithm(m_videoData, m_playbackData, m_bufferData,
-                                     m_throughput);
-  } else if (algorithm == "constbitrateW") {
-    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
-                                               m_bufferData, m_throughput);
-    bandwidthAlgo = new BandwidthAvgInChunkAlgorithm(
-        m_videoData, m_playbackData, m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
-    algo = new constbitrateAlgorithm(m_videoData, m_playbackData, m_bufferData,
-                                     m_throughput);
   } else if (algorithm == "constbitrateT") {
     userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
                                                m_bufferData, m_throughput);
     bandwidthAlgo = new BandwidthAvgInTimeAlgorithm(m_videoData, m_playbackData,
                                                     m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
-    algo = new constbitrateAlgorithm(m_videoData, m_playbackData, m_bufferData,
-                                     m_throughput);
-  } else if (algorithm == "constbitrateC") {
-    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
-                                               m_bufferData, m_throughput);
-    bandwidthAlgo = new BandwidthCrosslayerAlgorithm(
-        m_videoData, m_playbackData, m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
     algo = new constbitrateAlgorithm(m_videoData, m_playbackData, m_bufferData,
                                      m_throughput);
   } else if (algorithm == "constbitrateL") {
@@ -364,8 +280,20 @@ void TcpStreamClient::Initialise(
                                                m_bufferData, m_throughput);
     bandwidthAlgo = new BandwidthLongAvgAlgorithm(m_videoData, m_playbackData,
                                                   m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
+    algo = new constbitrateAlgorithm(m_videoData, m_playbackData, m_bufferData,
+                                     m_throughput);
+  } else if (algorithm == "constbitrateW") {
+    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
+                                               m_bufferData, m_throughput);
+    bandwidthAlgo = new BandwidthAvgInChunkAlgorithm(
+        m_videoData, m_playbackData, m_bufferData, m_throughput);
+    algo = new constbitrateAlgorithm(m_videoData, m_playbackData, m_bufferData,
+                                     m_throughput);
+  } else if (algorithm == "constbitrateH") {
+    userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
+                                               m_bufferData, m_throughput);
+    bandwidthAlgo = new BandwidthHarmonicAlgorithm(m_videoData, m_playbackData,
+                                                   m_bufferData, m_throughput);
     algo = new constbitrateAlgorithm(m_videoData, m_playbackData, m_bufferData,
                                      m_throughput);
   } else if (algorithm == "constbitrateWH") {
@@ -373,8 +301,6 @@ void TcpStreamClient::Initialise(
                                                m_bufferData, m_throughput);
     bandwidthAlgo = new BandwidthWHarmonicAlgorithm(m_videoData, m_playbackData,
                                                     m_bufferData, m_throughput);
-    bufferAlgo = new BufferCleanAlgorithm(m_videoData, m_playbackData,
-                                          m_bufferData, m_throughput);
     algo = new constbitrateAlgorithm(m_videoData, m_playbackData, m_bufferData,
                                      m_throughput);
   } else {
@@ -397,39 +323,16 @@ TcpStreamClient::~TcpStreamClient() {
   delete algo;
   delete userinfoAlgo;
   delete bandwidthAlgo;
-  delete bufferAlgo;
+
   algo = NULL;
   userinfoAlgo = NULL;
   bandwidthAlgo = NULL;
-  bufferAlgo = NULL;
+
   delete[] m_data;
   m_data = 0;
   m_dataSize = 0;
 }
 
-// add by wang
-algorithmReply TcpStreamClient::UptoQoE(algorithmReply answer) {
-  uint32_t RepLevel = answer.nextRepIndex;
-  uint32_t m_highestQoELevel = (RepLevelToQoE3D.size() - 1);
-  NS_ASSERT_MSG(RepLevel <= m_highestQoELevel,
-                "The choosen RepLevel is higher than the index of RepToQoE ");
-  if (RepLevel == 0) {
-    answer.nextRepIndex = 0;  // 10M repLevelIndex
-    answer.QoE3D = 3.2;       // 10M repLevelBW
-    return answer;
-  } else {
-    std::vector<double> RepLevelToQoE3D_temp = RepLevelToQoE3D;
-    RepLevelToQoE3D_temp.resize(RepLevel + 1);
-    std::vector<double>::iterator it;
-    it = find(RepLevelToQoE3D_temp.begin(), RepLevelToQoE3D_temp.end(),
-              *std::max_element(RepLevelToQoE3D_temp.begin(),
-                                RepLevelToQoE3D_temp.end()));
-    answer.nextRepIndex = std::distance(std::begin(RepLevelToQoE3D_temp), it);
-    answer.QoE3D = *it;
-    return answer;
-  }
-}
-// add by wang
 int64_t updateScale(int64_t scale,
                     std::vector<std::pair<int64_t, int64_t>> pause,
                     std::vector<std::pair<int64_t, int64_t>> new_stats) {
@@ -441,21 +344,28 @@ int64_t updateScale(int64_t scale,
     if (0 < new_stats.at(new_stats.size() - 1).first &&
         new_stats.at(new_stats.size() - 1).first < StartTime &&
         new_stats.at(0).first > EndTime) {
+      // std::cout<<"-----L--P "<<StartTime<<" ****P "<<EndTime<<"
+      // --L----"<<"\n";
       updateTimescale = updateTimescale - (EndTime - StartTime);
     } else if ((new_stats.at(new_stats.size() - 1).first > StartTime) &&
                (0 < new_stats.at(new_stats.size() - 1).first &&
                 new_stats.at(new_stats.size() - 1).first < EndTime)) {
+      // std::cout<<"-----P "<<StartTime<<" **L**P "<<StartTime<<"
+      // ----L----"<<"\n";
       updateTimescale = updateTimescale -
                         (EndTime - new_stats.at(new_stats.size() - 1).first);
     } else {
+      // std::cout<<"-----P "<<StartTime<<" ****P "<<StartTime<<"
+      // ----L-----L----"<<"\n";
     }
   }
   return updateTimescale;
 }
-// add by wang
+
 double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
                   std::vector<std::pair<int64_t, int64_t>> pause) {
   double bandwidthEstimate_inter = 0.0;
+  std::deque<PhyRxStatsCalculator::Time_Tbs>::iterator point;
   if (phy_stats.empty()) return bandwidthEstimate_inter;
   std::vector<std::pair<int64_t, int64_t>> new_stats;
   uint32_t cum_tbs = 0;
@@ -463,7 +373,7 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
   double updateTimescale = 0.0;
   //**********every 1ms
   uint32_t RequestTime = phy_stats.at(0).timestamp;
-  uint32_t intervalTime = 50;  // ms
+  uint32_t intervalTime = 500;  // 50; //ms //200
   if (RequestTime > intervalTime) {
     RequestTime = RequestTime - intervalTime;
   }               // first sample: currentTime-500ms
@@ -482,27 +392,27 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
     }
     std::deque<std::pair<int64_t, int64_t>> new_stats_right;
     std::deque<std::pair<int64_t, int64_t>> new_stats_left;
-    for (uint64_t i = L; i < phy_stats.size(); i++) {
-      int64_t right = 1;
-      if ((phy_stats.at(i).timestamp < (RequestTime)) &&
-          (phy_stats.at(i).timestamp > (RequestTime - intervalTime * 1))) {
+    for (point = phy_stats.begin() + L; point != phy_stats.end();
+         point++)  // uint64_t i = L; i < phy_stats.size(); i++)
+    {
+      if (((*point).timestamp < (RequestTime)) &&
+          ((*point).timestamp > (RequestTime - intervalTime))) {
         std::pair<int64_t, int64_t> temp;
-        temp.first = (int64_t)(phy_stats.at(i).timestamp);
-        temp.second = (int64_t)phy_stats.at(i).tbsize;
+        temp.first = (int64_t)((*point).timestamp);
+        temp.second = (int64_t)((*point).tbsize);
         if (temp.first >= traceBegin && traceBegin > 0) {
           new_stats_right.push_back(temp);
-          right++;
         }
       }
     }
     if (new_stats_right.empty())  // if deta time is not enought, then deta num
     {
-      for (uint64_t i = L; i < phy_stats.size(); i++) {
-        int64_t right = 1;
-        if ((phy_stats.at(i).timestamp < (RequestTime)) && (right < 5)) {
+      int64_t right = 1;
+      for (point = phy_stats.begin() + L; point != phy_stats.end(); point++) {
+        if (((*point).timestamp < (RequestTime)) && (right < 40)) {
           std::pair<int64_t, int64_t> temp;
-          temp.first = (int64_t)(phy_stats.at(i).timestamp);
-          temp.second = (int64_t)phy_stats.at(i).tbsize;
+          temp.first = (int64_t)((*point).timestamp);
+          temp.second = (int64_t)((*point).tbsize);
           if (temp.first >= traceBegin && traceBegin > 0) {
             new_stats_right.push_back(temp);
             right++;
@@ -510,27 +420,29 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
         }
       }
     }
-    for (uint64_t i = L; i > 0; i--) {
-      int64_t left = 1;
-      if ((phy_stats.at(i).timestamp > (RequestTime)) &&
-          (phy_stats.at(i).timestamp < (RequestTime + intervalTime * 1))) {
+    for (point = phy_stats.begin() + L; point != phy_stats.begin();
+         point--)  //(uint64_t i = L; i > 0; i--)
+    {
+      if (((*point).timestamp > (RequestTime)) &&
+          ((*point).timestamp < (RequestTime + intervalTime))) {
         std::pair<int64_t, int64_t> temp;
-        temp.first = (int64_t)(phy_stats.at(i).timestamp);
-        temp.second = (int64_t)phy_stats.at(i).tbsize;
+        temp.first = (int64_t)((*point).timestamp);
+        temp.second = (int64_t)((*point).tbsize);
         if (temp.first >= traceBegin && traceBegin > 0) {
           new_stats_left.push_front(temp);
-          left++;
         }
       }
     }
     if (new_stats_left.empty())  // if deta time is not enought, then deta num
     {
-      for (uint64_t i = L; i > 0; i--) {
-        int64_t left = 1;
-        if ((phy_stats.at(i).timestamp > (RequestTime)) && (left < 5)) {
+      int64_t left = 1;
+      for (point = phy_stats.begin() + L; point != phy_stats.begin();
+           point--)  //(uint64_t i = L; i > 0; i--)
+      {
+        if (((*point).timestamp > (RequestTime)) && (left < 40)) {
           std::pair<int64_t, int64_t> temp;
-          temp.first = (int64_t)(phy_stats.at(i).timestamp);
-          temp.second = (int64_t)phy_stats.at(i).tbsize;
+          temp.first = (int64_t)((*point).timestamp);
+          temp.second = (int64_t)((*point).tbsize);
           if (temp.first >= traceBegin && traceBegin > 0) {
             new_stats_left.push_front(temp);
             left++;
@@ -538,6 +450,7 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
         }
       }
     }
+
     std::deque<std::pair<int64_t, int64_t>>::iterator it;
     for (it = new_stats_left.begin(); it != new_stats_left.end(); it++)
       new_stats.push_back(*it);
@@ -558,8 +471,10 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
                                (updateTimescale));  // bps
       cum_tbs = 0;
       new_stats.clear();
+    } else {
+      std::cout << "new_stats.size()<=3"
+                << "\n";
     }
-
     if (RequestTime > intervalTime) {
       RequestTime = RequestTime - intervalTime;
       k++;
@@ -567,14 +482,11 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
       break;
     }
   }
-
   if (phy_throughput.empty())
     bandwidthEstimate_inter = 0;
   else {
-    if (phy_throughput.size() > 50) phy_throughput.resize(50);
-
-    if (phy_throughput.size() < 5 || true)  // 5e6
-    {
+    if (phy_throughput.size() < 5) phy_throughput.resize(50);
+    if (phy_throughput.size() < 5) {
       double aveBandwidth = 0;
       for (std::deque<double>::iterator it = phy_throughput.begin();
            it != phy_throughput.end(); it++) {
@@ -582,7 +494,7 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
       }
       bandwidthEstimate_inter = (double)aveBandwidth / phy_throughput.size();
     } else {
-      double temp = 0, temp_s = 0, temp_ss = 0;
+      double temp_s = 0, temp_ss = 0;
       for (std::deque<double>::reverse_iterator it = phy_throughput.rbegin();
            it != phy_throughput.rend(); it++) {
         if (it == phy_throughput.rbegin()) temp_s = *it;
@@ -591,24 +503,18 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
           temp_ss = temp_s;
         }
         temp_s = alpha * (*it) + (1 - alpha) * temp_s;
-        temp = temp_ss;
-        temp_ss = beta * temp_s + (1 - beta) * temp_ss;
-        bandwidthEstimate_inter = 2 * temp_s - temp_ss + (temp_ss - temp);
+        temp_ss = alpha * temp_s + (1 - alpha) * temp_ss;
+        bandwidthEstimate_inter =
+            2 * temp_s - temp_ss + (temp_s - temp_ss);  // T=1s
       }
     }
   }
   phy_throughput.clear();
-  NS_LOG_DEBUG("###### Get Newest Bandwidth at "
-               << (double)Simulator::Now().GetMicroSeconds() / 1000000
-               << " s  bandwidthEstimate_inter = " << bandwidthEstimate_inter);
   return bandwidthEstimate_inter;
 }
-// add by wang
 static double GetPhyRate(Ptr<PhyRxStatsCalculator> phy_rx_stats,
                          int64_t StartTime, int64_t EndTime, int64_t traceBegin,
                          uint16_t m_clientId) {
-  NS_LOG_DEBUG("###### Schdule GetPhyRate at "
-               << (double)Simulator::Now().GetMicroSeconds() / 1000000 << " s");
   //<\logging all the pause
   std::pair<int64_t, int64_t> pausetemp;
   pausetemp.first = StartTime;
@@ -618,7 +524,7 @@ static double GetPhyRate(Ptr<PhyRxStatsCalculator> phy_rx_stats,
   std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats =
       phy_rx_stats->GetCorrectTbs();
   double bandwidthEstimate_update =
-      0.92 *
+      0.9 *
       BWEstimate(phy_stats, pause);  // update Global val BandWidth by add all
   return bandwidthEstimate_update;
 }
@@ -626,31 +532,27 @@ static double GetPhyRate(Ptr<PhyRxStatsCalculator> phy_rx_stats,
 void TcpStreamClient::RequestRepIndex() {
   NS_LOG_FUNCTION(this);
 
-  userinfoAlgoReply userinfoanswer;
-  bandwidthAlgoReply bandwidthanswer;
-  bufferAlgoReply bufferanswer;
-  algorithmReply answer;
-
   int64_t PauseStartTime = lastEndTime;  // lastDownloadEnd==CurrentPauseStart
   int64_t PauseEndTime = Simulator::Now().GetMicroSeconds() / 1000;
-  if (m_segmentCounter != 0)
-    bandwidthEstimate = GetPhyRate(cm_crossLayerInfo, PauseStartTime,
-                                   PauseEndTime, traceBegin, m_clientId);
+  bandwidthEstimate = GetPhyRate(cm_crossLayerInfo, PauseStartTime,
+                                 PauseEndTime, traceBegin, m_clientId);
 
-  userinfoanswer =
-      userinfoAlgo->UserinfoAlgo(m_segmentCounter, m_clientId, 0, 0);
-  bandwidthanswer = bandwidthAlgo->BandwidthAlgo(m_segmentCounter, m_clientId,
-                                                 bandwidthEstimate, 0);
-  bufferanswer =
-      bufferAlgo->BufferAlgo(m_segmentCounter, m_clientId, 0, 5000000);
-  answer =
-      algo->GetNextRep(m_segmentCounter, m_clientId,
-                       bandwidthanswer.bandwidthEstimate, bandwidthEstimate);
+  userinfoAlgoReply userinfoanswer;
+  bandwidthAlgoReply bandwidthanswer;
+  algorithmReply answer;
 
-  answer = UptoQoE(answer);  // add by wang
+  userinfoanswer = userinfoAlgo->UserinfoAlgo(m_segmentCounter, m_clientId);
+  bandwidthanswer = bandwidthAlgo->BandwidthAlgo(m_segmentCounter, m_clientId);
+
+  if (!CROSSLAYER)
+    answer = algo->GetNextRep(m_segmentCounter, m_clientId,
+                              bandwidthanswer.bandwidthEstimate);
+  else
+    answer = algo->GetNextRep(m_segmentCounter, m_clientId,
+                              bandwidthEstimate);  //<crosslayer_BW
 
   if (m_segmentCounter == 0)
-    traceBegin = (int64_t)answer.decisionTime / 1000;  // ->ms
+    traceBegin = (int64_t)answer.decisionTime / 1000;  // ms
 
   m_videoData.repIndex.push_back(answer.nextRepIndex);
   m_currentRepIndex = answer.nextRepIndex;
@@ -658,13 +560,16 @@ void TcpStreamClient::RequestRepIndex() {
   NS_ASSERT_MSG(answer.nextRepIndex <= m_highestRepIndex,
                 "The algorithm returned a representation index that's higher "
                 "than the maximum");
+
   // time stamp, repnumber, repindex, bw, delay
-  std::cout << "** At :" << std::fixed << std::setprecision(3)
+
+  std::cout << "** At: " << std::fixed << std::setprecision(3)
             << answer.decisionTime / 1000000.0 << ", Rep " << m_segmentCounter
             << ", Index " << m_currentRepIndex << ", Bw " << std::fixed
             << std::setprecision(3) << answer.estimateTh / 1000000.0
             << ", Delay " << std::fixed << std::setprecision(3)
-            << answer.nextDownloadDelay / 1000000.0 << " **" << std::endl;
+            << answer.nextDownloadDelay / 1000000.0 << ", Case "
+            << answer.decisionCase << " **" << std::endl;
 
   m_playbackData.playbackIndex.push_back(answer.nextRepIndex);
   m_bDelay = answer.nextDownloadDelay;
@@ -706,15 +611,38 @@ void TcpStreamClient::HandleRead(Ptr<Socket> socket) {
 std::string TcpStreamClient::ChoseInfoPath(int64_t infoindex) {
   NS_LOG_FUNCTION(this);
   switch (infoindex) {
-    default:
-      infoStatusTemp = "Segment.txt";  // each line represents a replevel
-      // infoStatusTemp = "Roller_ERPO_segmentSize.txt";
-      break;
+    /*
+    case 0:{
+      //infoStatusTemp = "SegmentSize.txt";
+      //break;
+    }
+    case 1:{
+      //infoStatusTemp = "SegmentSize.txt";
+      //break;
+    }
+    case 2:{
+      //infoStatusTemp = "SegmentSize.txt";
+      //break;
+    }
+    case 3:{
+      //infoStatusTemp = "SegmentSize.txt";
+      //break;
+    }
+    case 4:{
+      //infoStatusTemp = "SegmentSize.txt";
+      //break;
+    }
+    case 5:{
+      //infoStatusTemp = "SegmentSize.txt";
+      //break;
+    }
+    */
+    default: { infoStatusTemp = "SegmentSize.txt"; }
   }
   return infoStatusTemp;
 }
 void TcpStreamClient::GetInfo() {
-  std::ifstream myinfo("UserInfo.txt");  // todo
+  std::ifstream myinfo("UserInfo.txt");
   for (int64_t s; myinfo >> s;) m_videoData.userInfo.push_back(s);
 }
 
@@ -735,6 +663,12 @@ int TcpStreamClient::ReadInBitrateValues() {
       std::istringstream buffer(temp);
       std::vector<int64_t> line((std::istream_iterator<int64_t>(buffer)),
                                 std::istream_iterator<int64_t>());
+      if (m_segmentDuration != 1000000) {
+        int64_t alpha = m_segmentDuration / 1000000;
+        for (auto it = line.begin(); it != line.end(); ++it) {
+          *it = *it * alpha;
+        }
+      }
       comb.push_back(line);
       averageByteSizeTemp =
           (int64_t)std::accumulate(line.begin(), line.end(), 0.0) / line.size();
@@ -757,7 +691,7 @@ int TcpStreamClient::ReadInBitrateValues() {
 void TcpStreamClient::SegmentReceivedHandle() {
   NS_LOG_FUNCTION(this);
   m_transmissionEndReceivingSegment = Simulator::Now().GetMicroSeconds();
-
+  lastEndTime = (int64_t)m_transmissionEndReceivingSegment / 1000;
   m_bufferData.timeNow.push_back(m_transmissionEndReceivingSegment);
   if (m_segmentCounter > 0) {
     m_bufferData.bufferLevelOld.push_back(
@@ -765,9 +699,8 @@ void TcpStreamClient::SegmentReceivedHandle() {
                      (m_transmissionEndReceivingSegment -
                       m_throughput.transmissionEnd.back()),
                  (int64_t)0));
-  } else  // first segment
-  {
-    m_bufferData.bufferLevelOld.push_back(0);
+  } else {
+    m_bufferData.bufferLevelOld.push_back(0);  // first segment
   }
   m_bufferData.bufferLevelNew.push_back(m_bufferData.bufferLevelOld.back() +
                                         m_videoData.segmentDuration);
@@ -956,15 +889,24 @@ void TcpStreamClient::LogDownload() {
 
 void TcpStreamClient::LogBuffer() {
   NS_LOG_FUNCTION(this);
-  bufferLog << std::setfill(' ') << std::setw(8) << std::fixed
+  bufferLog << std::setfill(' ') << std::setw(9) << std::fixed
             << std::setprecision(3)
             << m_transmissionEndReceivingSegment / (double)1000000
             << std::setfill(' ') << std::setw(9) << std::fixed
             << std::setprecision(3)
             << m_bufferData.bufferLevelOld.back() / (double)1000000
-            << std::setfill(' ') << std::setw(10) << std::fixed
+            << std::setfill(' ') << std::setw(9) << std::fixed
+            << std::setprecision(3)
+            << m_bufferData.bufferLevelNew.back() / (double)1000000
+            << "\n"
+            // for visualization
+            << std::setfill(' ') << std::setw(9) << std::fixed
+            << std::setprecision(3)
+            << m_transmissionEndReceivingSegment / (double)1000000
+            << std::setfill(' ') << std::setw(9) << std::fixed
             << std::setprecision(3)
             << m_bufferData.bufferLevelNew.back() / (double)1000000 << "\n";
+  //
   bufferLog.flush();
 }
 
@@ -994,7 +936,19 @@ void TcpStreamClient::LogPlayback() {
               << std::setfill(' ') << std::setw(7)
               << m_playbackData.playbackIndex.at(m_currentPlaybackIndex)
               << std::setfill(' ') << std::setw(10)
+              << m_videoData.userInfo.at(m_currentPlaybackIndex)
+              << "\n"
+              // for visualization
+              << std::setfill(' ') << std::setw(5) << m_currentPlaybackIndex
+              << std::setfill(' ') << std::setw(11) << std::fixed
+              << std::setprecision(3)
+              << (Simulator::Now().GetMicroSeconds() + m_segmentDuration) /
+                     (double)1000000
+              << std::setfill(' ') << std::setw(7)
+              << m_playbackData.playbackIndex.at(m_currentPlaybackIndex)
+              << std::setfill(' ') << std::setw(10)
               << m_videoData.userInfo.at(m_currentPlaybackIndex) << "\n";
+  //
   playbackLog.flush();
 }
 
