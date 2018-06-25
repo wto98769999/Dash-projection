@@ -62,15 +62,17 @@ static void ACEvent(Ptr<ConstantAccelerationMobilityModel> cvmm, Vector &speed,
 static void COEvent(Ptr<ConstantVelocityMobilityModel> cvmm, Vector &speed) {
   cvmm->SetVelocity(speed);
 }
+
 int main(int argc, char *argv[]) {
   LogComponentEnable("TcpStreamExample", LOG_LEVEL_INFO);
   LogComponentEnable("TcpStreamClientApplication", LOG_LEVEL_INFO);
   LogComponentEnable("TcpStreamServerApplication", LOG_LEVEL_INFO);
 
-  uint64_t segmentDuration = 1000000;  // ms==> 1s/segment
+  uint64_t segmentDuration = 10000000;
   uint32_t simulationId = 4;
-  uint32_t numberOfClients = 1;
-  uint32_t numberOfEnbs = 8;               // 7
+  uint32_t numberOfClients = 20;  // limit by 40
+  uint32_t numberOfEnbs = 1;      // 1
+  uint32_t scenarioId = 0;
   std::string adaptationAlgo = "tobasco";  //
   std::string app_type = "Dash";           // Bulk sender | On-Off Sender | Dash
   double eNbTxPower = 43.0;                // 43
@@ -87,6 +89,7 @@ int main(int argc, char *argv[]) {
                simulationId);
   cmd.AddValue("numberOfClients", "The number of clients", numberOfClients);
   cmd.AddValue("numberOfEnbs", "The number of eNodeBs", numberOfEnbs);
+  cmd.AddValue("scenarioId", "The Id of scenrio", scenarioId);
   cmd.AddValue("segmentDuration",
                "The duration of a video segment in microseconds",
                segmentDuration);
@@ -143,7 +146,7 @@ int main(int argc, char *argv[]) {
 
   if (simulationId == 1) fading_model = 0;
   if (simulationId == 2) fading_model = 0;
-  if (simulationId == 3) fading_model = 1;
+  if (simulationId == 3) fading_model = 0;
   if (simulationId == 4) fading_model = 1;
 
   if (fading_model == 0)
@@ -185,13 +188,13 @@ int main(int argc, char *argv[]) {
   NetDeviceContainer internetDevices = p2ph.Install(pgw, remote_host);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase("1.0.0.0", "255.0.0.0");
+  ipv4h.SetBase("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign(internetDevices);
   Ipv4StaticRoutingHelper ipv4RoutingHelper;
   Ptr<Ipv4StaticRouting> remote_host_static_routing =
       ipv4RoutingHelper.GetStaticRouting(remote_host->GetObject<Ipv4>());
   remote_host_static_routing->AddNetworkRouteTo(Ipv4Address("7.0.0.0"),
                                                 Ipv4Mask("255.0.0.0"), 1);
-
   NodeContainer eNb_nodes;
   NodeContainer ue_nodes;
   Ipv4InterfaceContainer ueIpIface;
@@ -201,14 +204,7 @@ int main(int argc, char *argv[]) {
   Ptr<ListPositionAllocator> positionAlloc_eNB =
       CreateObject<ListPositionAllocator>();
 
-  positionAlloc_eNB->Add(Vector(0, 0, 0));     // eNB_0
-  positionAlloc_eNB->Add(Vector(180, 0, 0));   // eNB_1
-  positionAlloc_eNB->Add(Vector(360, 0, 0));   // eNB_2
-  positionAlloc_eNB->Add(Vector(540, 0, 0));   // eNB_3
-  positionAlloc_eNB->Add(Vector(720, 0, 0));   // eNB_4
-  positionAlloc_eNB->Add(Vector(900, 0, 0));   // eNB_5
-  positionAlloc_eNB->Add(Vector(1080, 0, 0));  // eNB_6
-  positionAlloc_eNB->Add(Vector(1260, 0, 0));  // eNB_7
+  positionAlloc_eNB->Add(Vector(0, 0, 0));  // eNB_0
 
   enbMobility.SetPositionAllocator(positionAlloc_eNB);
   enbMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
@@ -218,11 +214,10 @@ int main(int argc, char *argv[]) {
   std::string dir = "mylogs/";
   std::string subdir = dir + adaptationAlgo + "/";
   std::string ssubdir = subdir + ToString(numberOfClients) + "/";
-
   const char *mylogsDir = (dir).c_str();
   mkdir(mylogsDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  const char *tobascoDir = (subdir).c_str();
-  mkdir(tobascoDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+  const char *algoDir = (subdir).c_str();
+  mkdir(algoDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
   const char *logdir = (ssubdir).c_str();
   mkdir(logdir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
@@ -283,36 +278,148 @@ int main(int argc, char *argv[]) {
     case 4: {  //車載穿小區
       MobilityHelper ueMobility_5;
       ueMobility_5.SetMobilityModel("ns3::ConstantAccelerationMobilityModel");
-      ueMobility_5.SetPositionAllocator("ns3::UniformDiscPositionAllocator",
-                                        "X", DoubleValue(-90.0), "Y",
-                                        DoubleValue(0), "rho", DoubleValue(0));
+      ueMobility_5.SetPositionAllocator(
+          "ns3::UniformDiscPositionAllocator", "X", DoubleValue(-90.0), "Y",
+          DoubleValue(0.0), "rho", DoubleValue(0));
       ueMobility_5.Install(ue_nodes);
       for (int64_t i = 0; i < ue_nodes.GetN(); i++) {
         Ptr<ConstantAccelerationMobilityModel> cvmm =
             ue_nodes.Get(i)->GetObject<ConstantAccelerationMobilityModel>();
-        cvmm->SetVelocityAndAcceleration(Vector(6, 0, 0), Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(30.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(60.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(90.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(120.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(150.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(180.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(210.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(240.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(270.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(300.0), &ACEvent, cvmm, Vector(6.0, 0, 0),
-                            Vector(0, 0, 0));
-        Simulator::Schedule(Seconds(330.0), &ACEvent, cvmm, Vector(-6.0, 0, 0),
-                            Vector(0, 0, 0));
+        if (scenarioId == 0) {
+          cvmm->SetVelocityAndAcceleration(Vector(45, 0, 0), Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(2.0), &ACEvent, cvmm, Vector(0, 0, 0),
+                              Vector(0, 0, 0));
+        } else if (scenarioId == 6) {
+          cvmm->SetVelocityAndAcceleration(Vector(6, 0, 0), Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(30.0), &ACEvent, cvmm, Vector(-6, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(60.0), &ACEvent, cvmm, Vector(6, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(90.0), &ACEvent, cvmm, Vector(-6, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(120.0), &ACEvent, cvmm, Vector(6, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(150.0), &ACEvent, cvmm, Vector(-6, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(180.0), &ACEvent, cvmm, Vector(6, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(210.0), &ACEvent, cvmm, Vector(-6, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(240.0), &ACEvent, cvmm, Vector(6, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(270.0), &ACEvent, cvmm, Vector(-6, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(300.0), &ACEvent, cvmm, Vector(6, 0, 0),
+                              Vector(0, 0, 0));
+        } else if (scenarioId == 12) {
+          cvmm->SetVelocityAndAcceleration(Vector(12, 0, 0), Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(15), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(30), &ACEvent, cvmm, Vector(12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(45), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(60), &ACEvent, cvmm, Vector(12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(75), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(90), &ACEvent, cvmm, Vector(12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(105), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(120), &ACEvent, cvmm, Vector(12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(135), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(150), &ACEvent, cvmm, Vector(12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(165), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(180), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(195), &ACEvent, cvmm, Vector(12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(210), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(225), &ACEvent, cvmm, Vector(12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(240), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(255), &ACEvent, cvmm, Vector(12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(270), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(285), &ACEvent, cvmm, Vector(12, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(300), &ACEvent, cvmm, Vector(-12, 0, 0),
+                              Vector(0, 0, 0));
+        } else if (scenarioId == 18) {
+          cvmm->SetVelocityAndAcceleration(Vector(18, 0, 0), Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(10), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(20), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(30), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(40), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(50), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(60), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(70), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(80), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(90), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(100), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(110), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(120), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(130), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(140), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(150), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(160), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(170), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(180), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(190), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(200), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(210), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(220), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(230), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(240), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(250), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(260), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(270), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(280), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(290), &ACEvent, cvmm, Vector(-18, 0, 0),
+                              Vector(0, 0, 0));
+          Simulator::Schedule(Seconds(300), &ACEvent, cvmm, Vector(18, 0, 0),
+                              Vector(0, 0, 0));
+        } else {
+          NS_ASSERT_MSG(scenarioId == 6 || scenarioId == 12 ||
+                            scenarioId == 18 || scenarioId == 0,
+                        "Invalid speed!");
+        }
       }
       break;
     }
@@ -360,23 +467,279 @@ int main(int argc, char *argv[]) {
     ApplicationContainer clientApps = clientHelper.Install(clients);
     clientApps.Get(0)->SetStartTime(Seconds(2));
     clientApps.Get(0)->SetStopTime(Seconds(302));
-    /*
-        clientApps.Get(1)->SetStartTime(Seconds(2));
-        clientApps.Get(1)->SetStopTime(Seconds(62));
-
-        clientApps.Get(2)->SetStartTime(Seconds(2));
-        clientApps.Get(2)->SetStopTime(Seconds(102));
-
-        clientApps.Get(3)->SetStartTime(Seconds(122));
-        clientApps.Get(3)->SetStopTime(Seconds(162));
-
-        clientApps.Get(4)->SetStartTime(Seconds(142));
-        clientApps.Get(5)->SetStartTime(Seconds(302));
-    */
+    
+    int *clientsNum;
+    int numOfeNbs = 0;
+    int intervaleNb = 0;
+    int clientsNum_0[7] = {2,4,1,7,6,2,9};//25
+    int intervalNum_0[7] = {0};
+    int clientsNum_6[3] = {1,6,3};//8
+    int clientsNum_12[6] = {2,4,1,6,8,3};//19
+    int clientsNum_18[9] = {2,1,3,7,9,3,5,1,7};//30
+    if (scenarioId == 6){
+      clientsNum = clientsNum_6;
+      numOfeNbs = 3;
+      intervaleNb = 30;
+    }else if(scenarioId == 12){
+      clientsNum = clientsNum_12;
+      numOfeNbs = 6;
+      intervaleNb = 15;
+    }else if(scenarioId == 18){
+      clientsNum = clientsNum_18;
+      numOfeNbs = 9;
+      intervaleNb = 10;
+    }else{
+      for(int m=0;m<7;m++){
+        intervalNum_0[m] = rand() % 15 + 5;
+      }
+      clientsNum = clientsNum_0;
+      numOfeNbs = 0;
+    }
+    int client_id = 1;
+    std::cout <<"scenarioId: " <<scenarioId<<std::endl;
+    if (numOfeNbs != 0){
+      //std::cout << "wrong!!!"<<std::endl;
+      for(int i=0;i<numOfeNbs;i++){
+        for (int j=0;j<clientsNum[i]-1;j++){
+          if (i==0){
+          clientApps.Get(client_id)->SetStartTime(Seconds(2));
+          clientApps.Get(client_id)->SetStopTime(Seconds(intervaleNb));
+          std::cout << client_id << "start at:" << 2 << "\t"
+                  << "end at:" << intervaleNb
+                  << std::endl;
+          client_id++;
+          }else{
+          clientApps.Get(client_id)->SetStartTime(Seconds(i*intervaleNb));
+          clientApps.Get(client_id)->SetStopTime(Seconds(i*intervaleNb+intervaleNb));
+          std::cout << client_id << "start at:" << i*intervaleNb<< "\t"
+                  << "end at:" << i*intervaleNb+intervaleNb
+                  << std::endl;
+          client_id++;
+          }
+        }
+      }
+    }else{
+       int interTemp = 2;
+       for(int i=0;i<7;i++){
+        for (int j=0;j<clientsNum[i]-1;j++){
+          if (i==0){
+          clientApps.Get(client_id)->SetStartTime(Seconds(2));
+          clientApps.Get(client_id)->SetStopTime(Seconds(2+intervalNum_0[0]));
+          std::cout << client_id << "start at:" << 2 << "\t"
+                  << "end at:" << 2+intervalNum_0[0]
+                  << std::endl;
+          client_id++;
+          }else{
+          clientApps.Get(client_id)->SetStartTime(Seconds(interTemp));
+          clientApps.Get(client_id)->SetStopTime(Seconds(interTemp + intervalNum_0[i]));
+          std::cout << client_id << "start at:" <<interTemp<< "\t"
+                  << "end at:" << interTemp + intervalNum_0[i]
+                  << std::endl;
+          client_id++;
+          }
+        }
+        interTemp = interTemp + intervalNum_0[i];
+      }
+    }
+    /*==============================================================================
+    if (scenarioId == 6) {
+      srand((unsigned)time(NULL));
+      const int eNbs = 3;
+      std::vector<int> temp(15, 0);
+      std::vector<std::vector<int>> randommap;
+      for (int i = 0; i < eNbs; ++i) {
+        int random = rand() % 15;
+        for (int i = 0; i < random; ++i) {
+          temp.at(i) = 1;
+        }
+        randommap.push_back(temp);
+        for (auto &item : temp) {
+          item = 0;
+        }
+      }
+      for (int i = 0; i < 15; ++i) {
+        for (int j = 0; j < eNbs; ++j) {
+          std::cout << randommap[j][15 - i - 1] << " ";
+        }
+        std::cout << std::endl;
+      }
+      std::vector<std::pair<int, int>> timestamp;
+      for (int col = 0; col < 15; ++col) {
+        int row = 0;
+        while (row < eNbs) {
+          while (row < eNbs && randommap[row][col] == 0) {
+            ++row;
+          }
+          int begin = row;
+          while (row < eNbs && randommap[row][col] == 1) {
+            ++row;
+          }
+          int end = row - 1;
+          if (end >= begin) {
+            timestamp.push_back(std::make_pair(begin, end + 1));
+          }
+        }
+      }
+      for (uint i = 1; i <= timestamp.size(); ++i) {
+        clientApps.Get(i)->SetStartTime(
+            Seconds(2 + timestamp.at(i - 1).first * 30));
+        clientApps.Get(i)->SetStopTime(
+            Seconds(2 + timestamp.at(i - 1).second * 30));
+        std::cout << "start at:" << 2 + timestamp.at(i - 1).first * 30 << "\t"
+                  << "end at:" << 2 + timestamp.at(i - 1).second * 30
+                  << std::endl;
+      }
+    } else if (scenarioId == 12) {
+      srand((unsigned)time(NULL));
+      const int eNbs = 6;
+      std::vector<int> temp(15, 0);
+      std::vector<std::vector<int>> randommap;
+      for (int i = 0; i < eNbs; ++i) {
+        int random = rand() % 15;
+        for (int i = 0; i < random; ++i) {
+          temp.at(i) = 1;
+        }
+        randommap.push_back(temp);
+        for (auto &item : temp) {
+          item = 0;
+        }
+      }
+      for (int i = 0; i < 15; ++i) {
+        for (int j = 0; j < eNbs; ++j) {
+          std::cout << randommap[j][15 - i - 1] << " ";
+        }
+        std::cout << std::endl;
+      }
+      std::vector<std::pair<int, int>> timestamp;
+      for (int col = 0; col < 15; ++col) {
+        int row = 0;
+        while (row < eNbs) {
+          while (row < eNbs && randommap[row][col] == 0) {
+            ++row;
+          }
+          int begin = row;
+          while (row < eNbs && randommap[row][col] == 1) {
+            ++row;
+          }
+          int end = row - 1;
+          if (end >= begin) {
+            timestamp.push_back(std::make_pair(begin, end + 1));
+          }
+        }
+      }
+      for (uint i = 1; i <= timestamp.size(); ++i) {
+        clientApps.Get(i)->SetStartTime(
+            Seconds(2 + timestamp.at(i - 1).first * 15));
+        clientApps.Get(i)->SetStopTime(
+            Seconds(2 + timestamp.at(i - 1).second * 15));
+        std::cout << "start at:" << 2 + timestamp.at(i - 1).first * 15 << "\t"
+                  << "end at:" << 2 + timestamp.at(i - 1).second * 15
+                  << std::endl;
+      }
+    } else if (scenarioId == 18) {
+      srand((unsigned)time(NULL));
+      const int eNbs = 9;
+      std::vector<int> temp(15, 0);
+      std::vector<std::vector<int>> randommap;
+      for (int i = 0; i < eNbs; ++i) {
+        int random = rand() % 15;
+        for (int i = 0; i < random; ++i) {
+          temp.at(i) = 1;
+        }
+        randommap.push_back(temp);
+        for (auto &item : temp) {
+          item = 0;
+        }
+      }
+      for (int i = 0; i < 15; ++i) {
+        for (int j = 0; j < eNbs; ++j) {
+          std::cout << randommap[j][15 - i - 1] << " ";
+        }
+        std::cout << std::endl;
+      }
+      std::vector<std::pair<int, int>> timestamp;
+      for (int col = 0; col < 15; ++col) {
+        int row = 0;
+        while (row < eNbs) {
+          while (row < eNbs && randommap[row][col] == 0) {
+            ++row;
+          }
+          int begin = row;
+          while (row < eNbs && randommap[row][col] == 1) {
+            ++row;
+          }
+          int end = row - 1;
+          if (end >= begin) {
+            timestamp.push_back(std::make_pair(begin, end + 1));
+          }
+        }
+      }
+      for (uint i = 1; i <= timestamp.size(); ++i) {
+        clientApps.Get(i)->SetStartTime(
+            Seconds(2 + timestamp.at(i - 1).first * 10));
+        clientApps.Get(i)->SetStopTime(
+            Seconds(2 + timestamp.at(i - 1).second * 10));
+        std::cout << "start at:" << 2 + timestamp.at(i - 1).first * 10 << "\t"
+                  << "end at:" << 2 + timestamp.at(i - 1).second * 10
+                  << std::endl;
+      }
+    } else if (scenarioId == 0) {  // speed == 0
+      srand((unsigned)time(NULL));
+      const int eNbs = 9;
+      std::vector<int> temp(15, 0);
+      std::vector<std::vector<int>> randommap;
+      for (int i = 0; i < eNbs; ++i) {
+        int random = rand() % 15;
+        for (int i = 0; i < random; ++i) {
+          temp.at(i) = 1;
+        }
+        randommap.push_back(temp);
+        for (auto &item : temp) {
+          item = 0;
+        }
+      }
+      for (int i = 0; i < 15; ++i) {
+        for (int j = 0; j < eNbs; ++j) {
+          std::cout << randommap[j][15 - i - 1] << " ";
+        }
+        std::cout << std::endl;
+      }
+      std::vector<std::pair<int, int>> timestamp;
+      for (int col = 0; col < 15; ++col) {
+        int row = 0;
+        while (row < eNbs) {
+          while (row < eNbs && randommap[row][col] == 0) {
+            ++row;
+          }
+          int begin = row;
+          while (row < eNbs && randommap[row][col] == 1) {
+            ++row;
+          }
+          int end = row - 1;
+          if (end >= begin) {
+            timestamp.push_back(std::make_pair(begin, end + 1));
+          }
+        }
+      }
+      for (uint i = 1; i <= timestamp.size(); ++i) {
+        clientApps.Get(i)->SetStartTime(
+            Seconds(2 + timestamp.at(i - 1).first * 10));
+        clientApps.Get(i)->SetStopTime(
+            Seconds(2 + timestamp.at(i - 1).second * 10));
+        std::cout << "start at:" << 2 + timestamp.at(i - 1).first * 10 << "\t"
+                  << "end at:" << 2 + timestamp.at(i - 1).second * 10
+                  << std::endl;
+      }
+    } else {
+      NS_ASSERT_MSG(scenarioId == 6 || scenarioId == 12 || scenarioId == 18 ||
+                        scenarioId == 0,
+                    "Invalid speed!");
+    }
+    ===========================================================================*/
     NS_LOG_INFO("Run Simulation.");
     NS_LOG_INFO("Sim:   " << simulationId
                           << "   Clients:   " << numberOfClients);
-    Simulator::Stop(Seconds(301));
+    Simulator::Stop(Seconds(121));
     Simulator::Run();
     Simulator::Destroy();
     NS_LOG_INFO("Done.");

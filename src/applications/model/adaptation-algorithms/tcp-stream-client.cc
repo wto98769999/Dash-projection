@@ -235,10 +235,10 @@ void TcpStreamClient::Initialise(
   } else if (algorithm == "tobascoL") {
     userinfoAlgo = new UserPredictionAlgorithm(m_videoData, m_playbackData,
                                                m_bufferData, m_throughput);
-    // harmonic
+
     bandwidthAlgo = new BandwidthLongAvgAlgorithm(m_videoData, m_playbackData,
                                                   m_bufferData, m_throughput);
-    // designed by tian
+
     algo = new TobascoAlgorithm(m_videoData, m_playbackData, m_bufferData,
                                 m_throughput);
   } else if (algorithm == "tomato") {
@@ -472,8 +472,7 @@ double BWEstimate(std::deque<PhyRxStatsCalculator::Time_Tbs> phy_stats,
       cum_tbs = 0;
       new_stats.clear();
     } else {
-      std::cout << "new_stats.size()<=3"
-                << "\n";
+      // std::cout << "new_stats.size()<=3" << "\n";
     }
     if (RequestTime > intervalTime) {
       RequestTime = RequestTime - intervalTime;
@@ -564,12 +563,12 @@ void TcpStreamClient::RequestRepIndex() {
   // time stamp, repnumber, repindex, bw, delay
 
   std::cout << "** At: " << std::fixed << std::setprecision(3)
-            << answer.decisionTime / 1000000.0 << ", Rep " << m_segmentCounter
-            << ", Index " << m_currentRepIndex << ", Bw " << std::fixed
-            << std::setprecision(3) << answer.estimateTh / 1000000.0
-            << ", Delay " << std::fixed << std::setprecision(3)
-            << answer.nextDownloadDelay / 1000000.0 << ", Case "
-            << answer.decisionCase << " **" << std::endl;
+            << answer.decisionTime / 1000000.0 << ", ClientId " << m_clientId
+            << ", Rep " << m_segmentCounter << ", Index " << m_currentRepIndex
+            << ", Bw " << std::fixed << std::setprecision(3)
+            << answer.estimateTh / 1000000.0 << ", Delay " << std::fixed
+            << std::setprecision(3) << answer.nextDownloadDelay / 1000000.0
+            << ", Case " << answer.decisionCase << " **" << std::endl;
 
   m_playbackData.playbackIndex.push_back(answer.nextRepIndex);
   m_bDelay = answer.nextDownloadDelay;
@@ -610,36 +609,8 @@ void TcpStreamClient::HandleRead(Ptr<Socket> socket) {
 // load the segment size info
 std::string TcpStreamClient::ChoseInfoPath(int64_t infoindex) {
   NS_LOG_FUNCTION(this);
-  switch (infoindex) {
-    /*
-    case 0:{
-      //infoStatusTemp = "SegmentSize.txt";
-      //break;
-    }
-    case 1:{
-      //infoStatusTemp = "SegmentSize.txt";
-      //break;
-    }
-    case 2:{
-      //infoStatusTemp = "SegmentSize.txt";
-      //break;
-    }
-    case 3:{
-      //infoStatusTemp = "SegmentSize.txt";
-      //break;
-    }
-    case 4:{
-      //infoStatusTemp = "SegmentSize.txt";
-      //break;
-    }
-    case 5:{
-      //infoStatusTemp = "SegmentSize.txt";
-      //break;
-    }
-    */
-    default: { infoStatusTemp = "SegmentSize.txt"; }
-  }
-  return infoStatusTemp;
+
+  return "SegmentSize.txt";
 }
 void TcpStreamClient::GetInfo() {
   std::ifstream myinfo("UserInfo.txt");
@@ -649,7 +620,7 @@ void TcpStreamClient::GetInfo() {
 int TcpStreamClient::ReadInBitrateValues() {
   NS_LOG_FUNCTION(this);
   GetInfo();
-  for (int64_t i = 0; i < 6; i++) {
+  for (int64_t i = 0; i < 1; i++) {  // useinfo circle
     std::ifstream myfile;
     segmentSizeFile = ChoseInfoPath(i);
     myfile.open(segmentSizeFile.c_str());
@@ -897,15 +868,17 @@ void TcpStreamClient::LogBuffer() {
             << m_bufferData.bufferLevelOld.back() / (double)1000000
             << std::setfill(' ') << std::setw(9) << std::fixed
             << std::setprecision(3)
-            << m_bufferData.bufferLevelNew.back() / (double)1000000
-            << "\n"
-            // for visualization
-            << std::setfill(' ') << std::setw(9) << std::fixed
-            << std::setprecision(3)
-            << m_transmissionEndReceivingSegment / (double)1000000
-            << std::setfill(' ') << std::setw(9) << std::fixed
-            << std::setprecision(3)
-            << m_bufferData.bufferLevelNew.back() / (double)1000000 << "\n";
+            << m_bufferData.bufferLevelNew.back() / (double)1000000 << "\n"
+      // for visualization
+      /*
+      << std::setfill(' ') << std::setw(9) << std::fixed
+      << std::setprecision(3)
+      << m_transmissionEndReceivingSegment / (double)1000000
+      << std::setfill(' ') << std::setw(9) << std::fixed
+      << std::setprecision(3)
+      << m_bufferData.bufferLevelNew.back() / (double)1000000 << "\n"
+      */
+      ;
   //
   bufferLog.flush();
 }
@@ -936,18 +909,20 @@ void TcpStreamClient::LogPlayback() {
               << std::setfill(' ') << std::setw(7)
               << m_playbackData.playbackIndex.at(m_currentPlaybackIndex)
               << std::setfill(' ') << std::setw(10)
-              << m_videoData.userInfo.at(m_currentPlaybackIndex)
-              << "\n"
-              // for visualization
-              << std::setfill(' ') << std::setw(5) << m_currentPlaybackIndex
-              << std::setfill(' ') << std::setw(11) << std::fixed
-              << std::setprecision(3)
-              << (Simulator::Now().GetMicroSeconds() + m_segmentDuration) /
-                     (double)1000000
-              << std::setfill(' ') << std::setw(7)
-              << m_playbackData.playbackIndex.at(m_currentPlaybackIndex)
-              << std::setfill(' ') << std::setw(10)
-              << m_videoData.userInfo.at(m_currentPlaybackIndex) << "\n";
+              << m_videoData.userInfo.at(m_currentPlaybackIndex) << "\n"
+      // for visualization
+      /*
+      << std::setfill(' ') << std::setw(5) << m_currentPlaybackIndex
+      << std::setfill(' ') << std::setw(11) << std::fixed
+      << std::setprecision(3)
+      << (Simulator::Now().GetMicroSeconds() + m_segmentDuration) /
+             (double)1000000
+      << std::setfill(' ') << std::setw(7)
+      << m_playbackData.playbackIndex.at(m_currentPlaybackIndex)
+      << std::setfill(' ') << std::setw(10)
+      << m_videoData.userInfo.at(m_currentPlaybackIndex) << "\n"
+      */
+      ;
   //
   playbackLog.flush();
 }

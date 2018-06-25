@@ -34,6 +34,7 @@ algorithmReply constbitrateAlgorithm::GetNextRep(const int64_t segmentCounter,
   answer.estimateTh = bandwidth;
 
   // add for xhinaxobile
+  /*
   if (segmentCounter != 0) {
     int64_t bufferNow = m_bufferData.bufferLevelNew.back() -
                         (timeNow - m_throughput.transmissionEnd.back());
@@ -42,6 +43,7 @@ algorithmReply constbitrateAlgorithm::GetNextRep(const int64_t segmentCounter,
           bufferNow - (m_bufferUpperbound - m_videoData.segmentDuration);
     }
   }
+  */
   //
 
   return answer;

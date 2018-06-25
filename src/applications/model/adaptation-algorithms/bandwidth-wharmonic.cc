@@ -53,11 +53,11 @@ bandwidthAlgoReply BandwidthWHarmonicAlgorithm::BandwidthAlgo(
       bandwidthEstimate = (double)sumThroughput * 1000000.0 / transmissionTime;
       answer.decisionCase = 2;
     }
+    answer.bandwidthEstimate = bandwidthEstimate;
   } else {
     answer.bandwidthEstimate = bandwidthEstimate;
     answer.decisionCase = 0;
   }
-  answer.bandwidthEstimate = bandwidthEstimate;
   return answer;
 }
 

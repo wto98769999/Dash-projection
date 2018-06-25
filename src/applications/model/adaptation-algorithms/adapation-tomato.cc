@@ -10,14 +10,21 @@ TomatoAlgorithm::TomatoAlgorithm(const videoData &videoData,
                                  const bufferData &bufferData,
                                  const throughputData &throughput)
     : AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_lastRepIndex(0),                                // last Bitrate Level
+      m_lastRepIndex(0),  // last Bitrate Level
+      /*
       m_targetBuffer(m_videoData.segmentDuration * 5),  // 5s
       m_bufferMin(m_videoData.segmentDuration * 2),     // 2s
+      */
+      m_targetBuffer(15000000),  // 15s(30000000)
+      m_bufferMin(10000000),     // 10s
       m_expBuffer(0),  // buffer expection ,cal at the beginning of download the
                        // current seg
       m_multipleTinyDrop(0),  // cal tiny buffer drop
       m_beta(0.0),            // adjust buffer upper bound
-      m_bufferUpperbound(m_videoData.segmentDuration * 15),  // 15s
+                              /*
+                              m_bufferUpperbound(m_videoData.segmentDuration * 15),  // 15s
+                              */
+      m_bufferUpperbound(40000000),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);
   NS_ASSERT_MSG(m_highestRepIndex >= 0,
@@ -40,9 +47,9 @@ algorithmReply TomatoAlgorithm::GetNextRep(const int64_t segmentCounter,
                 (timeNow - m_throughput.transmissionEnd.back());
     double alpha =
         bufferNow > m_targetBuffer ? 1.0 : bufferNow / m_targetBuffer;
-    if (bufferNow <= m_bufferMin) {
+    if (bufferNow < m_bufferMin) {
       answer.nextRepIndex = 0;
-      answer.decisionCase = 1;
+      answer.decisionCase = 0;
     } else {
       if (bandwidth > 0) {
         int64_t nextHighestIndex = m_highestRepIndex;
@@ -55,8 +62,12 @@ algorithmReply TomatoAlgorithm::GetNextRep(const int64_t segmentCounter,
         }
         if (nextHighestIndex > m_lastRepIndex) {
           if (bufferNow > m_expBuffer) {
-            nextHighestIndex = m_lastRepIndex + 1;
-            answer.decisionCase = 2;
+            if (bufferNow < m_expBuffer + m_videoData.segmentDuration / 2) {
+              nextHighestIndex = m_lastRepIndex + 1;
+              answer.decisionCase = 1;
+            } else
+              // nextHighestIndex =nextHighestIndex;
+              answer.decisionCase = 2;
           } else {
             nextHighestIndex = m_lastRepIndex;
             answer.decisionCase = 3;
@@ -114,13 +125,13 @@ algorithmReply TomatoAlgorithm::GetNextRep(const int64_t segmentCounter,
 
     // cal next downloaddelay
     if (bufferNow > m_targetBuffer * m_beta &&
-        answer.nextRepIndex >= m_lastRepIndex && bufferNow > m_expBuffer) {
+        answer.nextRepIndex > m_lastRepIndex && bufferNow > m_expBuffer) {
       answer.nextDownloadDelay = bufferNow - m_targetBuffer * m_beta;
       answer.delayDecisionCase = 1;
 
       // check whether the delaytime can be used for a hgher repindex
       if (answer.nextRepIndex < m_highestRepIndex && bandwidth > 0 &&
-          (answer.nextRepIndex + 1) == m_lastRepIndex) {
+          ((answer.nextRepIndex + 1) == m_lastRepIndex)) {
         int64_t lastSegmentThroughput =
             8 *
             (m_videoData.segmentSize
@@ -141,11 +152,11 @@ algorithmReply TomatoAlgorithm::GetNextRep(const int64_t segmentCounter,
             //(lastSegmentThroughput * alpha / 1000);
             (lastSegmentThroughput / 1000);
 
-        if (answer.nextDownloadDelay / 3 > extraDonwloadTime) {
+        if (answer.nextDownloadDelay > extraDonwloadTime) {
           answer.nextRepIndex = answer.nextRepIndex + 1;
           answer.nextDownloadDelay =
               answer.nextDownloadDelay > extraDonwloadTime;
-          answer.nextRepIndex = 10;
+          answer.decisionCase = 10;
           answer.delayDecisionCase = 2;
         }
       }

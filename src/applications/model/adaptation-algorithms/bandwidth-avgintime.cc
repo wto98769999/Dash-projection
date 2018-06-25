@@ -9,7 +9,9 @@ BandwidthAvgInTimeAlgorithm::BandwidthAvgInTimeAlgorithm(
     const videoData &videoData, const playbackData &playbackData,
     const bufferData &bufferData, const throughputData &throughput)
     : BandwidthAlgorithm(videoData, playbackData, bufferData, throughput),
-      m_deltaTime(m_videoData.segmentDuration * 2),
+      // m_deltaTime(m_videoData.segmentDuration * 3),
+      m_deltaTime_1(10000000),
+      m_deltaTime_2(30000000),
       m_lastBandwidthEstimate(0),
       m_highestRepIndex(videoData.averageBitrate[0].size() - 1) {
   NS_LOG_INFO(this);
@@ -23,8 +25,18 @@ bandwidthAlgoReply BandwidthAvgInTimeAlgorithm::BandwidthAlgo(
   answer.bandwidthAlgoIndex = 1;
   const int64_t timeNow = Simulator::Now().GetMicroSeconds();
   answer.decisionTime = timeNow;
-  answer.bandwidthEstimate = (int64_t)AverageBandwidth(
-      timeNow - m_deltaTime, timeNow, answer.decisionCase);
+  if (timeNow <= 10000000) {
+    answer.bandwidthEstimate = (int64_t)AverageBandwidth(
+        timeNow - m_deltaTime_1, timeNow, answer.decisionCase);
+  } else {
+    answer.bandwidthEstimate =
+        0.5 * (int64_t)AverageBandwidth(timeNow - m_deltaTime_1, timeNow,
+                                        answer.decisionCase) +
+        0.5 * (int64_t)AverageBandwidth(timeNow - m_deltaTime_2,
+                                        timeNow - m_deltaTime_1,
+                                        answer.decisionCase);
+  }
+
   return answer;
 }
 double BandwidthAvgInTimeAlgorithm::AverageBandwidth(int64_t t_1, int64_t t_2,
@@ -37,9 +49,10 @@ double BandwidthAvgInTimeAlgorithm::AverageBandwidth(int64_t t_1, int64_t t_2,
     return m_lastBandwidthEstimate;
   }
 
-  uint indexStart = 0;
-  uint indexEnd = m_throughput.transmissionEnd.size() - 1;
-  for (uint i = 0; i <= m_throughput.transmissionStart.size() - 1; i++) {
+  int32_t indexStart = 0;
+  int32_t indexEnd = m_throughput.transmissionEnd.size() - 1;
+  for (int32_t i = 0; i <= int32_t(m_throughput.transmissionStart.size() - 1);
+       i++) {
     if (m_throughput.transmissionEnd.at(i) < t_1)
       continue;
     else {
@@ -47,7 +60,8 @@ double BandwidthAvgInTimeAlgorithm::AverageBandwidth(int64_t t_1, int64_t t_2,
       break;
     }
   }
-  for (uint j = m_throughput.transmissionEnd.size() - 1; j >= 0; j--) {
+  for (int32_t j = int32_t(m_throughput.transmissionEnd.size() - 1); j >= 0;
+       j--) {
     if (m_throughput.transmissionStart.at(j) > t_2)
       continue;
     else {
